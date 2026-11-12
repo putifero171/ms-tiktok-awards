@@ -71,5 +71,24 @@
       <button class="modal-secondary" id="cancel-vote" type="button">FECHAR</button>
     </section>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="nominees.js"></script><script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="nominees.js"></script>
+  <script>
+  // Independent public-list fallback: keeps nominees visible if the app bundle fails.
+  (() => {
+    const data=window.AWARD_CATEGORIES||[];
+    const tabs=document.getElementById('category-tabs'),grid=document.getElementById('nominee-grid'),heading=document.getElementById('active-title'),count=document.getElementById('nominee-count'),search=document.getElementById('search'),empty=document.getElementById('empty-state');
+    if(!tabs||!grid||!heading||!count||!data.length)return;
+    let active=0;
+    const norm=s=>String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+    function draw(){
+      const cat=data[active],q=norm(search.value.trim());
+      heading.textContent=cat.title;
+      const list=cat.nominees.map((name,i)=>({name,i})).filter(x=>!q||norm(x.name).includes(q)||norm(cat.title).includes(q));
+      tabs.innerHTML='';data.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.onclick=()=>{active=i;draw()};tabs.appendChild(b)});
+      grid.innerHTML='';list.forEach((x,i)=>{const card=document.createElement('article');card.className='nominee-card ranking-card';const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(i+1).padStart(2,'0');const star=document.createElement('span');star.className='nominee-star';star.textContent='✦';const name=document.createElement('div');name.className='nominee-name';name.textContent=x.name;card.append(no,star,name);grid.appendChild(card)});
+      count.textContent=list.length+' NOMEADOS';empty.hidden=list.length!==0;
+    }
+    search.addEventListener('input',draw);draw();
+  })();
+  </script><script src="app.js"></script>
 </body></html>
