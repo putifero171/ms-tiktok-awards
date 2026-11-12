@@ -88,12 +88,12 @@ create index if not exists vote_submissions_nominee_status_idx on public.vote_su
 
 -- Only aggregate approved votes are exposed publicly; no payment or voter details.
 create or replace view public.approved_vote_totals
-with (security_invoker = true)
 as
 select nominee_id, sum(quantity)::bigint as vote_count
 from public.vote_submissions
 where status = 'approved'
 group by nominee_id;
+grant select on public.approved_vote_totals to anon, authenticated;
 
 alter table public.profiles enable row level security;
 alter table public.categories enable row level security;
@@ -132,7 +132,7 @@ with check (
   and exists (
     select 1 from public.nominees n
     join public.categories c on c.id = n.category_id
-    where n.id = nominee_id and n.category_id = category_id
+    where n.id = vote_submissions.nominee_id and n.category_id = vote_submissions.category_id
       and n.is_active and c.is_active
   )
 );
