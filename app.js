@@ -24,7 +24,7 @@
  function openVote(category,person){selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
  window.__awardsOpenVote=openVote;
  function closeVote(){modal.hidden=true;document.body.classList.remove('modal-open)}
- function updatePayment(){const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;const paypal=method.value==='paypal';amount.textContent=paypal?'€'+n.toLocaleString('pt-PT'):(n*1000).toLocaleString('pt-PT')+' Kz';ref.textContent='Voto X '+selected.category+' X '+selected.nominee+' X '+n+' votos';recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';$('express-instructions').hidden=paypal}
+ function updatePayment(){const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;const paypal=method.value==='paypal';amount.textContent=paypal?'€'+n.toLocaleString('pt-PT'):(n*1000).toLocaleString('pt-PT')+' Kz';ref.textContent='Voto X '+selected.category+' X '+selected.nominee+' X '+n+' votos';recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';$('express-instructions').hidden=paypal;$('payment-launch').hidden=!paypal;$('payment-step-hint').textContent=paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.'}
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
  function render(){
   if(!categories.length){title.textContent='Sem nomeados disponíveis';grid.innerHTML='';count.textContent='0 NOMEADOS';empty.hidden=false;return}
@@ -50,10 +50,10 @@
    const ext=file.name.split('.').pop().toLowerCase(),unique=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
    proofPath=selected.nomineeId+'/'+unique+'.'+ext;
    const uploaded=await sb.storage.from('payment-proofs').upload(proofPath,file,{upsert:false,contentType:file.type});
-   if(uploaded.error)throw uploaded.error;
+   if(uploaded.error)throw new Error('Falha no envio do comprovativo para o armazenamento: '+uploaded.error.message);
    const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:paypal?'paypal':'multicaixa_express',currency:paypal?'EUR':'AOA',amount:paypal?quantity:quantity*1000,payment_reference:ref.textContent,transaction_reference:transaction,voter_email:email,proof_path:proofPath,status:'pending'};
    const saved=await sb.from('vote_submissions').insert(payload);
-   if(saved.error){await sb.storage.from('payment-proofs').remove([proofPath]);throw saved.error}
+   if(saved.error){await sb.storage.from('payment-proofs').remove([proofPath]);throw new Error('O ficheiro foi enviado, mas a base de dados recusou a submissão: '+saved.error.message);}
    status.textContent='Submissão recebida! O teu voto está pendente de validação do pagamento. Ainda não foi contado.';
    button.textContent='SUBMISSÃO RECEBIDA';
    setTimeout(()=>{closeVote();button.disabled=false;button.textContent='ENVIAR VOTO E COMPROVATIVO'},3500);
