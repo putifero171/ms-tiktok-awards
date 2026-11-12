@@ -22,9 +22,22 @@
  }
  function imageUrl(path){return path&&sb?sb.storage.from('nominee-images').getPublicUrl(path).data.publicUrl:''}
  function openVote(category,person){selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
- window.__awardsOpenVote=openVote;window.__awardsUpdatePayment=updatePayment;
+ window.__awardsOpenVote=openVote;window.__awardsUpdatePayment=updatePayment;window.__awardsAppReady=true;
  function closeVote(){modal.hidden=true;document.body.classList.remove('modal-open)}
- function updatePayment(){const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;const selectedMethod=String(method.value||'paypal').toLowerCase();const paypal=selectedMethod==='paypal';amount.textContent=paypal?'€'+n.toLocaleString('pt-PT'):(n*1000).toLocaleString('pt-PT')+' Kz';ref.textContent='Voto X '+selected.category+' X '+selected.nominee+' X '+n+' votos';recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';$('express-instructions').hidden=paypal;$('payment-launch').hidden=!paypal;$('payment-step-hint').textContent=paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.'}
+ function updatePayment(){
+  const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;
+  const selectedMethod=String(method.value||'paypal').trim().toLowerCase();
+  const paypal=selectedMethod==='paypal';
+  const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
+  amount.textContent=paypal?'€'+n.toLocaleString('pt-PT'):(n*1000).toLocaleString('pt-PT')+' Kz';
+  ref.textContent=reference;
+  recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
+  const express=$('express-instructions'),launch=$('payment-launch'),hint=$('payment-step-hint');
+  express.hidden=paypal;express.style.display=paypal?'none':'block';
+  launch.hidden=!paypal;launch.style.display=paypal?'inline-block':'none';
+  if(hint)hint.textContent=paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
+ }
+
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
  function render(){
   if(!categories.length){title.textContent='Sem nomeados disponíveis';grid.innerHTML='';count.textContent='0 NOMEADOS';empty.hidden=false;return}
@@ -59,7 +72,7 @@
    setTimeout(()=>{closeVote();button.disabled=false;button.textContent='ENVIAR VOTO E COMPROVATIVO'},3500);
   }catch(error){console.error('Vote submission failed',error);status.textContent='Não foi possível registar. '+(error.message||'Tenta novamente ou contacta a organização.');button.disabled=false}
  }
- search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);$('submit-vote').addEventListener('click',submitVote);
+ search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
