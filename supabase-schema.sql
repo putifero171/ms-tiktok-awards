@@ -17,14 +17,14 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   insert into public.profiles (id, email, role)
   values (new.id, new.email, 'user')
   on conflict (id) do update set email = excluded.email;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists on_auth_user_created_awards on auth.users;
 create trigger on_auth_user_created_awards
