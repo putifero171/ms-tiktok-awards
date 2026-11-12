@@ -95,7 +95,7 @@
         const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(i+1).padStart(2,'0');
         const name=document.createElement('div');name.className='nominee-name';name.textContent=person.name;
         const vote=document.createElement('button');vote.className='nominee-vote-button';vote.type='button';vote.textContent='VOTAR';
-        vote.onclick=()=>{if(person.id&&window.__awardsOpenVote){window.__awardsOpenVote(cat,person)}else{$('vote-nominee').textContent=person.name;$('vote-category').textContent=cat.title;$('vote-submit-status').textContent='A carregar os dados de votação. Actualiza a página e tenta novamente.';$('vote-modal').hidden=false}};
+        vote.onclick=()=>{if(window.__awardsOpenVote){window.__awardsOpenVote(cat,person)}else{$('vote-nominee').textContent=person.name;$('vote-category').textContent=cat.title;$('vote-modal').hidden=false}};
         card.append(no,name,vote);grid.appendChild(card);
       });
       count.textContent=people.length+' NOMEADOS';empty.hidden=people.length!==0;
