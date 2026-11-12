@@ -33,7 +33,7 @@
       <div class="nominee-heading"><div><span class="eyebrow">CATEGORIA EM DESTAQUE</span><h3 id="active-title">Personalidade do Ano</h3></div><span class="nominee-count" id="nominee-count">11 NOMEADOS</span></div>
       <div class="ranking-caption"><span>RANKING DA CATEGORIA</span><span>VOTOS CONFIRMADOS</span></div><div class="nominee-grid" id="nominee-grid"></div>
       <div class="empty-state" id="empty-state" hidden>Não encontrámos resultados. Experimenta outra pesquisa.</div>
-      <div class="vote-notice"><span class="notice-icon">✦</span><div><b>Votação brevemente disponível</b><p>A votação ainda não começou. Os números apresentados estão a zero e o ranking oficial será actualizado com votos válidos após a abertura.</p></div><span class="notice-tag">EM PREPARAÇÃO</span></div>
+      <div class="vote-notice"><span class="notice-icon">✦</span><div><b>Votação aberta — validação manual</b><p>Escolhe um nomeado, efectua o pagamento e envia o comprovativo. Os votos só entram no ranking depois da confirmação pela organização.</p></div><span class="notice-tag">VOTAÇÃO ABERTA</span></div>
     </section>
     <section class="payment-guide" id="voting-info">
       <div class="eyebrow">COMO PARTICIPAR</div>
@@ -44,7 +44,7 @@
         <article class="payment-method"><span class="payment-label">MULTICAIXA EXPRESS</span><strong>1.000 Kz / voto</strong><p>Número de pagamento:</p><b>941 232 417</b><p>Titular: <b>Marcelo Smith</b></p></article>
       </div>
       <div class="reference-guide"><span class="notice-icon">✦</span><div><h3>Referência obrigatória do pagamento</h3><p>Na referência/descrição do pagamento, escreve exactamente:</p><strong class="reference-example">Voto X [Categoria] X [Nome] X [Nº de votos]</strong><p>Exemplos: <b>Voto X Ody Carla</b> · <b>Voto X MAF Muteba</b> · <b>Voto X Dj Celson</b></p><p>Se votares em nomeados diferentes, faz pagamentos separados e usa a referência correspondente a cada nomeado.</p><p>Depois, envia o comprovativo e a referência da transacção para validação. <b>O voto só será contabilizado depois de a organização confirmar e aprovar o pagamento.</b></p></div></div>
-      <p class="payment-status">A submissão de comprovativos e a votação paga ainda não estão activas. Não efectues pagamentos até ao anúncio oficial da abertura.</p>
+      <p class="payment-status">Guarda o comprovativo e o ID da transacção. Cada pagamento deve corresponder a uma única submissão e a um único nomeado. A aprovação é manual.</p>
     </section>
     <section class="about-section" id="about"><div class="about-number">MS / 26</div><div><div class="eyebrow">MAIS DO QUE UM PRÉMIO</div><h2>Uma noite.<br><span class="gradient-text">Muitas histórias.</span></h2></div><div class="about-copy"><p>Os MS TikTok PALOP Awards 2026 celebram criadores, artistas e personalidades que inspiram conversas e movimentam a cultura digital dos PALOP.</p><p class="disclaimer">Evento independente para a comunidade PALOP. Não é afiliado, patrocinado ou oficialmente associado ao TikTok ou à ByteDance.</p></div></section>
   </main>
@@ -55,12 +55,19 @@
       <div class="eyebrow">MS TIKTOK PALOP AWARDS 2026</div><h2 id="vote-modal-title">Apoia o teu <span class="gradient-text">nomeado.</span></h2>
       <p class="modal-selection"><b id="vote-nominee"></b><span id="vote-category"></span></p>
       <label for="vote-quantity">Quantidade de votos</label><input id="vote-quantity" type="number" min="1" max="1000" value="1">
-      <label for="payment-method">Método de pagamento</label><select id="payment-method"><option value="paypal">PayPal — €1 por voto</option><option value="express">Multicaixa Express — 1.000 Kz por voto</option></select>
+      <label for="payment-method">Método de pagamento</label><select id="payment-method"><option value="paypal">PayPal — €1 por voto</option><option value="multicaixa_express">Multicaixa Express — 1.000 Kz por voto</option></select>
       <div class="modal-total"><span>Total a pagar</span><strong id="vote-amount">€1</strong></div>
-      <div class="modal-payment-details" id="payment-recipient">PayPal: <b>Marcelolemossmith@gmail.com</b></div><button class="paypal-pay-button" id="paypal-pay" type="button">CONTINUAR PARA PAYPAL ↗</button><div class="express-instructions" id="express-instructions" hidden>Abre a aplicação Multicaixa Express e envia o valor indicado para o número apresentado. Confirma a referência antes de concluir.</div>
+      <div class="modal-payment-details" id="payment-recipient">PayPal: <b>Marcelolemossmith@gmail.com</b></div><div class="express-instructions" id="express-instructions" hidden>Abre a aplicação Multicaixa Express e envia o valor indicado para o número apresentado. Titular: Marcelo Smith.</div>
       <div class="modal-reference"><span>REFERÊNCIA OBRIGATÓRIA</span><strong id="vote-reference">Voto X Nomeado</strong><button type="button" id="copy-reference">COPIAR REFERÊNCIA</button></div>
-      <p class="modal-warning">Depois de pagar, o comprovativo deve ser enviado para validação. O voto só será contabilizado após confirmação pela organização.</p>
-      <p class="modal-not-ready">A submissão do comprovativo ainda está a ser activada. Este ecrã permite preparar o pagamento, mas ainda não regista nem contabiliza votos. Aguarda a abertura oficial antes de pagar.</p>
+      <div class="vote-submit-fields">
+        <label for="voter-email">O teu email</label><input id="voter-email" type="email" autocomplete="email" placeholder="email@exemplo.com" required>
+        <label for="transaction-reference">ID / referência da transacção</label><input id="transaction-reference" type="text" maxlength="120" placeholder="Referência apresentada pelo banco ou PayPal" required>
+        <label for="payment-proof">Comprovativo de pagamento (imagem ou PDF)</label><input id="payment-proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required>
+        <p class="admin-note">Máximo 10 MB. Não envies dados de cartão ou palavras-passe. O comprovativo será visível apenas à equipa de administração.</p>
+      </div>
+      <p class="modal-warning">Submete apenas depois de concluíres o pagamento. A submissão fica pendente e só será contabilizada após verificação manual.</p>
+      <p id="vote-submit-status" class="vote-submit-status" role="status"></p>
+      <button class="paypal-pay-button" id="submit-vote" type="button">ENVIAR VOTO E COMPROVATIVO</button>
       <button class="modal-secondary" id="cancel-vote" type="button">FECHAR</button>
     </section>
   </div>
