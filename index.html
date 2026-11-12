@@ -73,22 +73,45 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="nominees.js"></script>
   <script>
-  // Independent public-list fallback: keeps nominees visible if the app bundle fails.
+  // Independent renderer: live Supabase nominee data, photos and vote launch.
   (() => {
-    const data=window.AWARD_CATEGORIES||[];
-    const tabs=document.getElementById('category-tabs'),grid=document.getElementById('nominee-grid'),heading=document.getElementById('active-title'),count=document.getElementById('nominee-count'),search=document.getElementById('search'),empty=document.getElementById('empty-state');
-    if(!tabs||!grid||!heading||!count||!data.length)return;
-    let active=0;
-    const norm=s=>String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+    const $=id=>document.getElementById(id),data=window.AWARD_CATEGORIES||[];
+    const tabs=$('category-tabs'),grid=$('nominee-grid'),heading=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state');
+    if(!tabs||!grid||!heading||!count)return;
+    let active=0,categories=data.map((c,i)=>({id:null,title:c.title,nominees:c.nominees.map((name,j)=>({id:null,name,image_path:null,display_order:j+1}))}));
+    const client=window.supabase&&window.SUPABASE_URL?window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY):null;
+    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
     function draw(){
-      const cat=data[active],q=norm(search.value.trim());
+      if(!categories.length)return;
+      active=Math.min(active,categories.length-1);
+      const cat=categories[active],q=norm(search.value.trim());
       heading.textContent=cat.title;
-      const list=cat.nominees.map((name,i)=>({name,i})).filter(x=>!q||norm(x.name).includes(q)||norm(cat.title).includes(q));
-      tabs.innerHTML='';data.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.onclick=()=>{active=i;draw()};tabs.appendChild(b)});
-      grid.innerHTML='';list.forEach((x,i)=>{const card=document.createElement('article');card.className='nominee-card ranking-card';const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(i+1).padStart(2,'0');const star=document.createElement('span');star.className='nominee-star';star.textContent='✦';const name=document.createElement('div');name.className='nominee-name';name.textContent=x.name;card.append(no,star,name);grid.appendChild(card)});
-      count.textContent=list.length+' NOMEADOS';empty.hidden=list.length!==0;
+      tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.textContent=String(i+1).padStart(2,'0')+' '+c.title;b.onclick=()=>{active=i;draw()};tabs.appendChild(b)});
+      const people=cat.nominees.filter(n=>!q||norm(n.name).includes(q)||norm(cat.title).includes(q));
+      grid.innerHTML='';
+      people.forEach((person,i)=>{
+        const card=document.createElement('article');card.className='nominee-card ranking-card';
+        if(person.image_path&&client){const img=document.createElement('img');img.className='nominee-photo';img.alt='Fotografia de '+person.name;img.loading='lazy';img.src=client.storage.from('nominee-images').getPublicUrl(person.image_path).data.publicUrl;card.appendChild(img)}
+        const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(i+1).padStart(2,'0');
+        const name=document.createElement('div');name.className='nominee-name';name.textContent=person.name;
+        const vote=document.createElement('button');vote.className='nominee-vote-button';vote.type='button';vote.textContent='VOTAR';
+        vote.onclick=()=>{if(person.id&&window.__awardsOpenVote){window.__awardsOpenVote(cat,person)}else{$('vote-nominee').textContent=person.name;$('vote-category').textContent=cat.title;$('vote-submit-status').textContent='A carregar os dados de votação. Actualiza a página e tenta novamente.';$('vote-modal').hidden=false}};
+        card.append(no,name,vote);grid.appendChild(card);
+      });
+      count.textContent=people.length+' NOMEADOS';empty.hidden=people.length!==0;
     }
     search.addEventListener('input',draw);draw();
+    if(client){
+      Promise.all([
+        client.from('categories').select('id,title,display_order').eq('is_active',true).order('display_order'),
+        client.from('nominees').select('id,name,category_id,image_path,display_order').eq('is_active',true).order('display_order')
+      ]).then(([cr,nr])=>{
+        if(cr.error||nr.error)throw cr.error||nr.error;
+        const grouped=new Map();(nr.data||[]).forEach(n=>{if(!grouped.has(n.category_id))grouped.set(n.category_id,[]);grouped.get(n.category_id).push(n)});
+        const live=(cr.data||[]).map(c=>({...c,nominees:grouped.get(c.id)||[]}));
+        if(live.length){categories=live;active=0;draw()}
+      }).catch(e=>console.error('Fallback live nominee fetch:',e));
+    }
   })();
   </script><script src="app.js"></script>
 </body></html>
