@@ -6,5 +6,6 @@ window.AWARD_CATEGORIES = [
 {title:"Cavação do Ano",nominees:["Folhas Caídas","Jelson .X","Gilberto","Z Boy","Jossana","BK Polémico","Kassumuna","Ivo Laizer"]},
 {title:"Influenciador do Ano",nominees:["MAF Muteba","Pai Aturmento","Josy Ginga","Boss Bravo","Elizandra Ely","Carla Ouro","Maumau","Teresa Katchokwe","Gêmeas Calutes","Kamilo Carsony","As Tricotadas"]},
 {title:"DJ do Ano",nominees:["Dj Celson","Dj Foguinho","Dj Inocêncio","Dj Gilberto","Dj Kizaca","Dj Júnior"]},
-{title:"Homem Mais Bonito do Ano",nominees:["Miguel Marques","Gerginho","Putifero","Inacreditável","Rubem","JC","Nivaldo Nascimento","Kolliandro","Rei Iluminante"]}
+{title:"Homem Mais Bonito do Ano",nominees:["Miguel Marques","Gerginho","Putifero","Inacreditável","Rubem","JC","Nivaldo Nascimento","Kolliandro","Rei Iluminante"]},
+{title:"Melhor Grupo do Ano",nominees:["Os Diamond","Os Safados","Família Strong","Família do Comentador","Os Infantis"]}
 ];
