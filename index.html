@@ -49,5 +49,20 @@
     <section class="about-section" id="about"><div class="about-number">MS / 26</div><div><div class="eyebrow">MAIS DO QUE UM PRÉMIO</div><h2>Uma noite.<br><span class="gradient-text">Muitas histórias.</span></h2></div><div class="about-copy"><p>Os MS TikTok PALOP Awards 2026 celebram criadores, artistas e personalidades que inspiram conversas e movimentam a cultura digital dos PALOP.</p><p class="disclaimer">Evento independente para a comunidade PALOP. Não é afiliado, patrocinado ou oficialmente associado ao TikTok ou à ByteDance.</p></div></section>
   </main>
   <footer><a class="brand" href="#"><span class="brand-mark">MS</span><span>MS <b>TIKTOK AWARDS</b><small>PALOP · 2026</small></span></a><span>© 2026 MS TikTok PALOP Awards. Todos os direitos reservados.</span><a href="#home">VOLTAR AO TOPO ↑</a></footer>
+  <div class="vote-modal-backdrop" id="vote-modal" hidden>
+    <section class="vote-modal" role="dialog" aria-modal="true" aria-labelledby="vote-modal-title">
+      <button class="modal-close" id="close-vote" aria-label="Fechar">×</button>
+      <div class="eyebrow">MS TIKTOK PALOP AWARDS 2026</div><h2 id="vote-modal-title">Apoia o teu <span class="gradient-text">nomeado.</span></h2>
+      <p class="modal-selection"><b id="vote-nominee"></b><span id="vote-category"></span></p>
+      <label for="vote-quantity">Quantidade de votos</label><input id="vote-quantity" type="number" min="1" max="1000" value="1">
+      <label for="payment-method">Método de pagamento</label><select id="payment-method"><option value="paypal">PayPal — €1 por voto</option><option value="express">Multicaixa Express — 1.000 Kz por voto</option></select>
+      <div class="modal-total"><span>Total a pagar</span><strong id="vote-amount">€1</strong></div>
+      <div class="modal-payment-details" id="payment-recipient">PayPal: <b>Marcelolemossmith@gmail.com</b></div>
+      <div class="modal-reference"><span>REFERÊNCIA OBRIGATÓRIA</span><strong id="vote-reference">Voto X Nomeado</strong><button type="button" id="copy-reference">COPIAR REFERÊNCIA</button></div>
+      <p class="modal-warning">Depois de pagar, o comprovativo deve ser enviado para validação. O voto só será contabilizado após confirmação pela organização.</p>
+      <p class="modal-not-ready">A submissão do comprovativo ainda está a ser activada. Este ecrã permite preparar o pagamento, mas ainda não regista nem contabiliza votos. Aguarda a abertura oficial antes de pagar.</p>
+      <button class="modal-secondary" id="cancel-vote" type="button">FECHAR</button>
+    </section>
+  </div>
   <script src="nominees.js"></script><script src="app.js"></script>
 </body></html>
