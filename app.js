@@ -23,7 +23,7 @@
  function imageUrl(path){return path&&sb?sb.storage.from('nominee-images').getPublicUrl(path).data.publicUrl:''}
  function openVote(category,person){selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
  window.__awardsOpenVote=openVote;window.__awardsUpdatePayment=updatePayment;window.__awardsAppReady=true;
- function closeVote(){modal.hidden=true;document.body.classList.remove('modal-open)}
+ function closeVote(){modal.hidden=true;document.body.classList.remove('modal-open')}
  function updatePayment(){
   const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;
   const selectedMethod=String(method.value||'paypal').trim().toLowerCase();
