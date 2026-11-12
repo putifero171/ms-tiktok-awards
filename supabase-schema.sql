@@ -33,16 +33,20 @@ for each row execute procedure public.handle_new_awards_user();
 
 create or replace function public.is_awards_admin()
 returns boolean
-language sql
+language plpgsql
 stable
 security definer
 set search_path = ''
-as $$
-  select exists (
-    select 1 from public.profiles p
-    where p.id = (select auth.uid()) and p.role = 'admin'
+as $
+begin
+  return exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.role = 'admin'
   );
-$$;
+end;
+$;
 
 create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
