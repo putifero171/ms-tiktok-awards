@@ -1,0 +1,1 @@
+export default function AdminPage(){return <main className="wrap" style={{padding:'60px 0'}}><a href="/">← Voltar ao início</a><p style={{color:'#25f4ee',marginTop:60}}>BACK OFFICE</p><h1>PAINEL DE ADMINISTRAÇÃO</h1><p style={{color:'#a4a8b4'}}>Ambiente inicial de desenvolvimento. Autenticação e permissões devem ser implementadas antes de disponibilizar este painel.</p></main>}
