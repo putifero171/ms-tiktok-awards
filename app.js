@@ -22,6 +22,7 @@
  }
  function imageUrl(path){return path&&sb?sb.storage.from('nominee-images').getPublicUrl(path).data.publicUrl:''}
  function openVote(category,person){selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
+ window.__awardsOpenVote=openVote;
  function closeVote(){modal.hidden=true;document.body.classList.remove('modal-open)}
  function updatePayment(){const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;const paypal=method.value==='paypal';amount.textContent=paypal?'€'+n.toLocaleString('pt-PT'):(n*1000).toLocaleString('pt-PT')+' Kz';ref.textContent='Voto X '+selected.category+' X '+selected.nominee+' X '+n+' votos';recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';$('express-instructions').hidden=paypal}
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
