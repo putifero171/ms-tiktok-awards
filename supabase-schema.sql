@@ -37,7 +37,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 begin
   return exists (
     select 1
@@ -46,7 +46,7 @@ begin
       and p.role = 'admin'
   );
 end;
-$;
+$$;
 
 create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
