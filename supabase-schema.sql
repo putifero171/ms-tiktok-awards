@@ -12,6 +12,25 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+create or replace function public.handle_new_awards_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  insert into public.profiles (id, email, role)
+  values (new.id, new.email, 'user')
+  on conflict (id) do update set email = excluded.email;
+  return new;
+end;
+$;
+
+drop trigger if exists on_auth_user_created_awards on auth.users;
+create trigger on_auth_user_created_awards
+after insert on auth.users
+for each row execute procedure public.handle_new_awards_user();
+
 create or replace function public.is_awards_admin()
 returns boolean
 language sql
@@ -154,6 +173,14 @@ with check (bucket_id = 'nominee-images' and public.is_awards_admin());
 drop policy if exists "admins delete nominee images" on storage.objects;
 create policy "admins delete nominee images" on storage.objects
 for delete to authenticated using (bucket_id = 'nominee-images' and public.is_awards_admin());
+
+drop policy if exists "public upload payment proofs" on storage.objects;
+create policy "public upload payment proofs" on storage.objects
+for insert to anon, authenticated
+with check (
+  bucket_id = 'payment-proofs'
+  and lower(storage.extension(name)) in ('jpg','jpeg','png','webp','pdf')
+);
 
 drop policy if exists "admins manage payment proofs" on storage.objects;
 create policy "admins manage payment proofs" on storage.objects
