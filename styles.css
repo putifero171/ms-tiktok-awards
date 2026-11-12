@@ -11,3 +11,20 @@
 
 /* Paid vote submission form */
 .vote-submit-fields{display:grid;gap:8px;margin:18px 0}.vote-submit-fields label{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}.vote-submit-fields input{width:100%;min-width:0;padding:12px;background:#08090d;border:1px solid var(--line);color:white;font:13px var(--font)}.vote-submit-fields input[type=file]{font-size:11px}.vote-submit-fields .admin-note{margin:0}.vote-submit-status{min-height:20px;color:var(--gold);font-size:12px;line-height:1.5;margin:10px 0}.paypal-pay-button:disabled{opacity:.5;cursor:not-allowed}.vote-notice .notice-tag{white-space:nowrap}
+
+/* More interactive category navigation */
+.category-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:24px 0 38px}
+.category-tab{position:relative;min-height:58px;text-align:left;padding:13px 15px;display:flex;align-items:center;gap:10px;overflow:hidden;border-radius:3px}
+.category-tab:after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--pink));transition:width .28s ease}
+.category-tab:hover:after,.category-tab.active:after{width:100%}
+.category-tab.active{background:linear-gradient(120deg,#55e6e018,#ff4ca20c);box-shadow:inset 0 0 0 1px #55e6e01a;color:white}
+.category-tab .tab-no{font:700 12px var(--display);color:var(--gold);margin:0}
+.category-tab.active .tab-no{color:var(--cyan)}
+.nominee-grid{animation:categoryReveal .28s ease both}
+@keyframes categoryReveal{from{opacity:.35;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.payment-action-panel{margin-top:16px;padding:15px;background:#08090d;border:1px solid var(--line)}
+.payment-launch{display:inline-flex;align-items:center;justify-content:center;margin-top:14px;padding:13px 16px;background:#ffc439;color:#10233d;font-size:10px;font-weight:800;letter-spacing:.1em}
+.payment-launch[hidden]{display:none}
+.payment-step-hint{font-size:10px;line-height:1.6;color:var(--muted);margin:10px 0 0}
+@media(max-width:850px){.category-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.category-tabs{grid-template-columns:1fr 1fr;gap:7px}.category-tab{padding:10px;min-height:52px;font-size:9px}}
