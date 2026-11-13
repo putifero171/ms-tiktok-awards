@@ -1,6 +1,6 @@
 -- MS TikTok PALOP Awards 2026: enforce the voting opening time in Supabase.
 -- Run this migration in Supabase Dashboard > SQL Editor before launch.
--- The opening time is 13 November 2026 at 22:00 UTC (London/Luanda local time).
+-- The opening time is 13 November 2026 at 21:00 UTC (21:00 London / 22:00 Luanda).
 
 begin;
 
