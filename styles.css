@@ -38,3 +38,7 @@
 
 /* High-resolution transparent Marcelo Smith emblem */
 .brand-logo{object-fit:contain;background:transparent;border-radius:0;filter:drop-shadow(0 0 12px #e9bd7250)}.hero-logo{object-fit:contain;background:transparent;border-radius:0;filter:drop-shadow(0 18px 38px #e9bd7240)}
+
+
+/* 10-vote discounted bulk offer in the payment modal */
+.bulk-offer{display:block;width:100%;margin:14px 0 20px;padding:16px 18px;text-align:left;background:linear-gradient(110deg,#211b12,#171923);border:1px solid #e9bd7260;color:var(--text);cursor:pointer;transition:.2s}.bulk-offer:hover,.bulk-offer.is-selected{border-color:var(--gold);box-shadow:0 0 0 1px #e9bd7240,0 8px 28px #e9bd7215}.bulk-offer-top{display:flex;align-items:center;justify-content:space-between;font-size:9px;letter-spacing:.16em;color:var(--gold)}.bulk-badge{background:var(--gold);color:#17110a;padding:5px 8px;font-weight:800}.bulk-offer-price{display:flex;align-items:baseline;gap:10px;margin:9px 0 3px}.bulk-offer-price strong{font:700 30px var(--display);color:var(--gold)}.bulk-offer-price span{font-size:12px;color:#ddd}.bulk-offer-foot{display:block;color:var(--muted);font-size:10px}.bulk-offer-action{display:block;margin-top:12px;color:var(--cyan);font-size:9px;font-weight:800;letter-spacing:.14em}.price-was{font-size:12px;color:var(--muted);text-decoration:line-through;font-weight:500;margin-right:5px}@media(max-width:650px){.bulk-offer{padding:14px}.bulk-offer-price strong{font-size:27px}}
