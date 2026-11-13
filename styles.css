@@ -70,3 +70,7 @@
 #launch-music-toggle:hover{background:#e9bd7220;border-color:var(--gold)}
 #launch-music-toggle[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan)}
 .music-icon{font-size:17px}
+
+
+/* Keep complete nominee photographs visible without cropping */
+.nominee-photo{object-fit:contain;object-position:center;background:#08090d}
