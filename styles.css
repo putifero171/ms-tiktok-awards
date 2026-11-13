@@ -35,3 +35,6 @@
 /* Replace the abstract trophy with the official Marcelo Smith awards emblem */
 .hero-logo{position:relative;z-index:2;width:min(100%,390px);height:auto;max-height:440px;object-fit:contain;filter:drop-shadow(0 18px 38px #e9bd7240);border-radius:3px}
 @media(max-width:900px){.hero-logo{width:min(82vw,350px);max-height:380px}}
+
+/* High-resolution transparent Marcelo Smith emblem */
+.brand-logo{object-fit:contain;background:transparent;border-radius:0;filter:drop-shadow(0 0 12px #e9bd7250)}.hero-logo{object-fit:contain;background:transparent;border-radius:0;filter:drop-shadow(0 18px 38px #e9bd7240)}
