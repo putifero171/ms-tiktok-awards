@@ -11,8 +11,8 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  if statement_timestamp() < timestamptz '2026-11-13 22:00:00+00' then
-    raise exception 'Voting is not open yet. Voting opens at 22:00 on 13 November 2026.'
+  if statement_timestamp() < timestamptz '2026-11-13 21:00:00+00' then
+    raise exception 'Voting is not open yet. Voting opens at 22:00 Luanda time (21:00 London time) on 13 November 2026.'
       using errcode = 'P0001';
   end if;
   return new;
@@ -29,7 +29,7 @@ drop policy if exists "public submit pending votes" on public.vote_submissions;
 create policy "public submit pending votes" on public.vote_submissions
 for insert to anon, authenticated
 with check (
-  statement_timestamp() >= timestamptz '2026-11-13 22:00:00+00'
+  statement_timestamp() >= timestamptz '2026-11-13 21:00:00+00'
   and status = 'pending'
   and reviewed_by is null
   and reviewed_at is null
@@ -42,7 +42,7 @@ create policy "public upload payment proofs" on storage.objects
 for insert to anon, authenticated
 with check (
   bucket_id = 'payment-proofs'
-  and statement_timestamp() >= timestamptz '2026-11-13 22:00:00+00'
+  and statement_timestamp() >= timestamptz '2026-11-13 21:00:00+00'
   and lower(storage.extension(name)) in ('jpg','jpeg','png','webp','pdf')
 );
 
