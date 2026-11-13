@@ -55,6 +55,29 @@
   const {error}=await client.from('nominees').update(updates).eq('id',id);if(error){say('dashboard-message',error.message);return}say('dashboard-message','Nomeado actualizado.');$('nominee-photo').value='';await loadNominees();
  });
  $('delete-nominee').addEventListener('click',async()=>{const id=$('edit-nominee').value;if(!id||!confirm('Remover este nomeado?'))return;const {error}=await client.from('nominees').update({is_active:false}).eq('id',id);if(error){say('dashboard-message',error.message);return}say('dashboard-message','Nomeado desactivado.');await loadNominees()});
+ $('add-category').addEventListener('click',async()=>{
+  const title=$('new-category-title').value.trim();
+  const names=[...new Set($('new-category-nominees').value.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean))];
+  if(!title)return say('dashboard-message','Indica o nome da categoria.');
+  if(!names.length)return say('dashboard-message','Adiciona pelo menos um nomeado, um por linha.');
+  say('dashboard-message','A criar categoria e nomeados...');
+  let category=categories.find(c=>c.title.toLocaleLowerCase()===title.toLocaleLowerCase());
+  if(!category){
+   const {data,error}=await client.from('categories').insert({title,display_order:categories.length+1,is_active:true}).select('id,title,display_order').single();
+   if(error){say('dashboard-message',error.message);return}
+   category=data;
+  }
+  const existing=nominees.filter(n=>n.category_id===category.id).map(n=>n.name.toLocaleLowerCase());
+  const fresh=names.filter(n=>!existing.includes(n.toLocaleLowerCase()));
+  if(fresh.length){
+   const rows=fresh.map((name,i)=>({category_id:category.id,name,display_order:existing.length+i+1,is_active:true}));
+   const {error}=await client.from('nominees').insert(rows);
+   if(error){say('dashboard-message','Categoria criada, mas houve um erro ao adicionar os nomeados: '+error.message);await loadAll();return}
+  }
+  $('new-category-title').value='';$('new-category-nominees').value='';
+  say('dashboard-message','Categoria "'+title+'" guardada. '+fresh.length+' novo(s) nomeado(s) adicionado(s).');
+  await loadAll();
+ });
  $('add-nominee').addEventListener('click',async()=>{const category_id=$('new-category').value,name=$('new-name').value.trim();if(!name)return say('dashboard-message','Escreve o nome do nomeado.');const {error}=await client.from('nominees').insert({category_id,name,display_order:nominees.filter(n=>n.category_id===category_id).length+1});if(error){say('dashboard-message',error.message);return}$('new-name').value='';say('dashboard-message','Nomeado adicionado.');await loadNominees()});
  currentSession();
 })();
