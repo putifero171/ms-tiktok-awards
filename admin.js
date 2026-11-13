@@ -31,7 +31,7 @@
   ['edit-category','new-category'].forEach(id=>{$(id).innerHTML=categories.map(c=>'<option value="'+c.id+'">'+esc(c.title)+'</option>').join('')});
  }
  async function loadNominees(){
-  const {data,error}=await client.from('nominees').select('id,name,category_id,image_path,display_order').order('display_order');
+  const {data,error}=await client.from('nominees').select('id,name,category_id,image_path,display_order').eq('is_active',true).order('display_order');
   if(error){say('dashboard-message',error.message);return}nominees=data||[];populateNominees();
  }
  function populateNominees(){
@@ -62,7 +62,7 @@
   if(file){if(file.size>5*1024*1024){say('dashboard-message','A imagem excede 5 MB.');return}const ext=file.name.split('.').pop().toLowerCase(),path=id+'/'+Date.now()+'.'+ext;const {error:upErr}=await client.storage.from('nominee-images').upload(path,file,{upsert:true,contentType:file.type});if(upErr){say('dashboard-message',upErr.message);return}updates.image_path=path}
   const {error}=await client.from('nominees').update(updates).eq('id',id);if(error){say('dashboard-message',error.message);return}say('dashboard-message','Nomeado actualizado.');$('nominee-photo').value='';await loadNominees();
  });
- $('delete-nominee').addEventListener('click',async()=>{const id=$('edit-nominee').value;if(!id||!confirm('Remover este nomeado?'))return;const {error}=await client.from('nominees').update({is_active:false}).eq('id',id);if(error){say('dashboard-message',error.message);return}say('dashboard-message','Nomeado desactivado.');await loadNominees()});
+ $('delete-nominee').addEventListener('click',async()=>{const id=$('edit-nominee').value;if(!id||!confirm('Remover este nomeado da votação?'))return;say('dashboard-message','A remover nomeado...');const {data,error}=await client.from('nominees').update({is_active:false}).eq('id',id).select('id').maybeSingle();if(error){say('dashboard-message','Não foi possível remover: '+error.message);return}if(!data){say('dashboard-message','Nenhum registo foi actualizado. Verifica as permissões desta conta no Supabase.');return}nominees=nominees.filter(n=>n.id!==id);populateNominees();say('dashboard-message','Nomeado removido da votação. Já não aparece na lista nem no ranking público.');});
  $('add-category').addEventListener('click',async()=>{
   const title=$('new-category-title').value.trim();
   const names=[...new Set($('new-category-nominees').value.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean))];
