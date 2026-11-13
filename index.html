@@ -8,6 +8,24 @@
   <link rel="stylesheet" href="styles.css"><script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+  <section id="launch-gate" class="launch-gate" aria-live="polite">
+    <div class="launch-gate-glow"></div>
+    <div class="launch-gate-content">
+      <img src="/marcelo-palop-transparent-optimized.png" alt="MS TikTok PALOP Awards" class="launch-gate-logo">
+      <div class="eyebrow"><span class="live-dot"></span> A GRANDE NOITE CHEGOU</div>
+      <p class="launch-kicker">MS TIKTOK PALOP AWARDS</p>
+      <h1>O palco é <span class="gradient-text">TEU.</span></h1>
+      <p class="launch-desc">A votação abre oficialmente às <strong>22:00</strong><br>13 de Novembro de 2026 · Hora de Luanda e Londres</p>
+      <div class="countdown" id="launch-countdown">
+        <div><strong id="count-days">00</strong><span>DIAS</span></div><i>:</i>
+        <div><strong id="count-hours">00</strong><span>HORAS</span></div><i>:</i>
+        <div><strong id="count-minutes">00</strong><span>MINUTOS</span></div><i>:</i>
+        <div><strong id="count-seconds">00</strong><span>SEGUNDOS</span></div>
+      </div>
+      <p class="launch-status" id="launch-status">PREPARA-TE. A TUA VOZ VAI CONTAR.</p>
+    </div>
+    <div class="launch-footer">© 2026 MS TIKTOK PALOP AWARDS <span>·</span> BLACKMOON SERVICES WORLD WIDE</div>
+  </section>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <header class="topbar"><a class="brand" href="#"><img class="brand-logo" src="/marcelo-palop-transparent-optimized.png" alt="MS TikTok PALOP Awards 2026"><span>MS <b>TIKTOK AWARDS</b><small>PALOP · 2026</small></span></a>
     <nav><a href="#home">Início</a><a href="#categories">Categorias</a><a href="#about">Sobre</a></nav>
@@ -74,4 +92,33 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="nominees.js"></script>
   <script src="app.js?v=20261113-1"></script>
+
+  <script>
+  (() => {
+    const launchAt = new Date('2026-11-13T22:00:00+00:00').getTime();
+    const gate = document.getElementById('launch-gate');
+    const pad = n => String(n).padStart(2, '0');
+    function updateLaunchCountdown() {
+      const remaining = launchAt - Date.now();
+      if (remaining <= 0) {
+        gate.classList.add('launch-gate-ended');
+        document.body.classList.remove('launch-locked');
+        gate.setAttribute('aria-hidden', 'true');
+        window.clearInterval(timer);
+        return;
+      }
+      const days = Math.floor(remaining / 86400000);
+      const hours = Math.floor((remaining % 86400000) / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+      document.getElementById('count-days').textContent = pad(days);
+      document.getElementById('count-hours').textContent = pad(hours);
+      document.getElementById('count-minutes').textContent = pad(minutes);
+      document.getElementById('count-seconds').textContent = pad(seconds);
+    }
+    document.body.classList.add('launch-locked');
+    updateLaunchCountdown();
+    const timer = window.setInterval(updateLaunchCountdown, 1000);
+  })();
+  </script>
 </body></html>
