@@ -12,8 +12,17 @@
  async function showDashboard(session){
   $('auth-view').classList.add('admin-hidden');$('dashboard').classList.remove('admin-hidden');$('admin-identity').textContent=session.user.email;
   const {data:profile,error}=await client.from('profiles').select('role').eq('id',session.user.id).maybeSingle();
-  if(error||profile?.role!=='admin'){$('dashboard').classList.add('admin-hidden');$('auth-view').classList.remove('admin-hidden');say('auth-message','A tua conta ainda não tem permissões de administrador. O proprietário deve promovê-la no SQL Editor do Supabase.');return}
-  say('dashboard-message','Sessão de administrador activa.');await loadAll();
+  const role=profile?.role;
+  if(error||!['super_admin','admin','vote_approver','content_admin'].includes(role)){$('dashboard').classList.add('admin-hidden');$('auth-view').classList.remove('admin-hidden');say('auth-message','Esta conta não tem permissões activas de administrador.');return}
+  window.awardsAdminRole=role;
+  const fullAccess=['super_admin','admin'].includes(role);
+  $('team-panel').classList.toggle('admin-hidden',role!=='super_admin');
+  ['add-category','save-nominee','delete-nominee','add-nominee'].forEach(id=>$(id).closest('.admin-panel').classList.toggle('admin-hidden',!fullAccess));
+  $('submissions-body').closest('.admin-panel').classList.toggle('admin-hidden',!['super_admin','admin','vote_approver'].includes(role));
+  say('dashboard-message','Sessão activa · '+({super_admin:'Super Admin',admin:'Admin',vote_approver:'Vote Approval',content_admin:'Content Admin'}[role]||role));
+  if(role!=='vote_approver') await loadCategories();
+  if(role!=='vote_approver') await loadNominees();
+  if(role!=='content_admin') await loadSubmissions();
  }
  async function loadAll(){await loadCategories();await loadNominees();await loadSubmissions()}
  async function loadCategories(){
@@ -43,8 +52,7 @@
   const proof=e.target.dataset.proof;if(proof){const {data,error}=await client.storage.from('payment-proofs').createSignedUrl(proof,90);if(error){say('dashboard-message',error.message);return}window.open(data.signedUrl,'_blank','noopener');return}
   const approve=e.target.dataset.approve,reject=e.target.dataset.reject,id=approve||reject;if(!id)return;
   const next=approve?'approved':'rejected';if(!confirm('Confirmas '+(approve?'a aprovação':'a rejeição')+' desta submissão?'))return;
-  const {data:{user}}=await client.auth.getUser();
-  const {error}=await client.from('vote_submissions').update({status:next,reviewed_by:user.id,reviewed_at:new Date().toISOString()}).eq('id',id);
+  const {error}=await client.rpc('admin_review_vote_submission',{submission_id:id,decision:next});
   if(error){say('dashboard-message',error.message);return}say('dashboard-message','Submissão '+(approve?'aprovada.':'rejeitada.'));await loadSubmissions();
  });
  $('save-nominee').addEventListener('click',async()=>{
@@ -77,6 +85,15 @@
   $('new-category-title').value='';$('new-category-nominees').value='';
   say('dashboard-message','Categoria "'+title+'" guardada. '+fresh.length+' novo(s) nomeado(s) adicionado(s).');
   await loadAll();
+ });
+ $('save-team-role')?.addEventListener('click',async()=>{
+  const email=$('team-email').value.trim(),role=$('team-role').value;
+  if(!email)return say('team-message','Indica o email da conta.');
+  say('team-message','A actualizar permissões...');
+  const {error}=await client.rpc('admin_manage_awards_user',{target_email:email,new_role:role});
+  if(error){say('team-message',error.message);return}
+  say('team-message','Permissão actualizada para '+email+'. A pessoa deve terminar sessão e voltar a entrar.');
+  $('team-email').value='';
  });
  $('add-nominee').addEventListener('click',async()=>{const category_id=$('new-category').value,name=$('new-name').value.trim();if(!name)return say('dashboard-message','Escreve o nome do nomeado.');const {error}=await client.from('nominees').insert({category_id,name,display_order:nominees.filter(n=>n.category_id===category_id).length+1});if(error){say('dashboard-message',error.message);return}$('new-name').value='';say('dashboard-message','Nomeado adicionado.');await loadNominees()});
  currentSession();
