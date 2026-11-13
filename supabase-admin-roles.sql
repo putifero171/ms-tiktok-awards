@@ -41,11 +41,11 @@ create policy "Awards reviewers can read submissions" on public.vote_submissions
 for select to authenticated using (public.current_awards_role() in ('super_admin','admin','vote_approver'));
 
 -- One-time promotion for Mauro's Supabase login. Run this after the migration above.
-do $
+do $$
 declare mauro_id uuid;
 begin
  select id into mauro_id from auth.users where lower(email)=lower('mlopes.mstreamit@outlook.com') limit 1;
  if mauro_id is null then raise exception 'No Supabase account found for mlopes.mstreamit@outlook.com. Create/sign in to the account first.'; end if;
  insert into public.profiles(id,role) values(mauro_id,'super_admin')
  on conflict(id) do update set role='super_admin';
-end; $;
+end; $$;
