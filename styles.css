@@ -28,3 +28,6 @@
 .payment-step-hint{font-size:10px;line-height:1.6;color:var(--muted);margin:10px 0 0}
 @media(max-width:850px){.category-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.category-tabs{grid-template-columns:1fr 1fr;gap:7px}.category-tab{padding:10px;min-height:52px;font-size:9px}}
+
+/* MS PALOP Awards header emblem */
+.brand{gap:14px}.brand-logo{display:block;width:64px;height:64px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 0 12px #e9bd7250)}@media(max-width:640px){.topbar{padding-inline:5vw}.brand-logo{width:50px;height:50px}.brand{font-size:11px}}
