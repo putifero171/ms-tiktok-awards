@@ -104,6 +104,16 @@
   (() => {
     const launchAt = new Date('2026-11-13T21:00:00+00:00').getTime();
     const gate = document.getElementById('launch-gate');
+    const previewMode = new URLSearchParams(window.location.search).get('preview') === '1';
+    if (previewMode) {
+      gate.classList.add('launch-gate-ended');
+      gate.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('launch-locked');
+      const previewNotice = document.createElement('div');
+      previewNotice.textContent = 'MODO DE PRÉ-VISUALIZAÇÃO — A VOTAÇÃO AINDA NÃO ESTÁ ABERTA';
+      previewNotice.style.cssText = 'position:sticky;top:0;z-index:99999;padding:10px 16px;text-align:center;background:#f4c95d;color:#17130a;font:700 12px/1.4 sans-serif;letter-spacing:.08em';
+      document.body.prepend(previewNotice);
+    }
     const music = document.getElementById('launch-music');
     const musicButton = document.getElementById('launch-music-toggle');
     const musicLabel = document.getElementById('launch-music-label');
