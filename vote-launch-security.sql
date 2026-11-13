@@ -9,7 +9,7 @@ create or replace function public.enforce_awards_voting_open()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 begin
   if statement_timestamp() < timestamptz '2026-11-13 21:00:00+00' then
     raise exception 'Voting is not open yet. Voting opens at 22:00 Luanda time (21:00 London time) on 13 November 2026.'
