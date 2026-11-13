@@ -23,6 +23,13 @@
         <div><strong id="count-seconds">00</strong><span>SEGUNDOS</span></div>
       </div>
       <p class="launch-status" id="launch-status">PREPARA-TE. A TUA VOZ VAI CONTAR.</p>
+      <div class="launch-music-control">
+        <audio id="launch-music" src="/countdown-music.mp3" preload="auto" loop></audio>
+        <button id="launch-music-toggle" type="button" aria-pressed="false" aria-label="Activar música">
+          <span class="music-icon" aria-hidden="true">♫</span><span id="launch-music-label">ENTRAR COM MÚSICA</span>
+        </button>
+      </div>
+
     </div>
     <div class="launch-footer">© 2026 MS TIKTOK PALOP AWARDS <span>·</span> BLACKMOON SERVICES WORLD WIDE</div>
   </section>
@@ -91,17 +98,40 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="nominees.js"></script>
-  <script src="app.js?v=20261113-1"></script>
+  <script src="app.js?v=20261113-2"></script>
 
   <script>
   (() => {
     const launchAt = new Date('2026-11-13T22:00:00+00:00').getTime();
     const gate = document.getElementById('launch-gate');
+    const music = document.getElementById('launch-music');
+    const musicButton = document.getElementById('launch-music-toggle');
+    const musicLabel = document.getElementById('launch-music-label');
+    let musicStarted = false;
+    musicButton.addEventListener('click', async () => {
+      if (music.paused) {
+        try {
+          await music.play();
+          musicStarted = true;
+          musicButton.setAttribute('aria-pressed', 'true');
+          musicButton.setAttribute('aria-label', 'Desactivar música');
+          musicLabel.textContent = 'SOM DESLIGADO';
+        } catch (error) {
+          musicLabel.textContent = 'TENTAR NOVAMENTE';
+        }
+      } else {
+        music.pause();
+        musicButton.setAttribute('aria-pressed', 'false');
+        musicButton.setAttribute('aria-label', 'Activar música');
+        musicLabel.textContent = 'ENTRAR COM MÚSICA';
+      }
+    });
     const pad = n => String(n).padStart(2, '0');
     function updateLaunchCountdown() {
       const remaining = launchAt - Date.now();
       if (remaining <= 0) {
         gate.classList.add('launch-gate-ended');
+        music.pause();
         document.body.classList.remove('launch-locked');
         gate.setAttribute('aria-hidden', 'true');
         window.clearInterval(timer);
