@@ -64,3 +64,9 @@
 .launch-footer{position:absolute;bottom:22px;left:16px;right:16px;color:#777987;font-size:8px;letter-spacing:.16em}
 .launch-footer span{color:var(--pink);padding:0 7px}
 @media(max-width:480px){.launch-gate{padding:25px 12px}.launch-gate-logo{width:155px}.countdown{gap:6px;margin:30px auto 25px}.countdown div{min-width:58px}.countdown strong{font-size:34px}.countdown i{font-size:20px}.launch-footer{font-size:7px;letter-spacing:.1em}}
+
+.launch-music-control{margin:22px auto 0}
+#launch-music-toggle{display:inline-flex;align-items:center;justify-content:center;gap:11px;min-height:44px;padding:0 19px;border:1px solid #e9bd7280;background:#e9bd7210;color:var(--gold);font:700 9px var(--font);letter-spacing:.16em;cursor:pointer;transition:.2s}
+#launch-music-toggle:hover{background:#e9bd7220;border-color:var(--gold)}
+#launch-music-toggle[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan)}
+.music-icon{font-size:17px}
