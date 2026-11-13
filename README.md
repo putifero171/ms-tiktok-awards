@@ -1,20 +1,34 @@
-# MS TikTok Awards 2026
+# MS TikTok PALOP Awards 2026
 
-Independent awards concept celebrating creators and digital personalities in Angola. This project is not affiliated with TikTok or ByteDance.
+Independent awards platform celebrating creators and digital personalities across the PALOP community. This project is not affiliated with, sponsored by, or officially associated with TikTok or ByteDance.
 
-## Current website
-A responsive static website built with HTML, CSS and vanilla JavaScript. It includes the first eight categories and 81 nominee entries supplied for the 2026 edition.
+## Website
 
-## Run locally
-Open `index.html` in a browser, or serve this folder with any static web server.
+Responsive static website built with HTML, CSS and vanilla JavaScript, deployed on Vercel.
 
-## Deploy
-Import this repository into Vercel as a static site. No build command is required; set the output directory to `.`.
+## Voting
 
-## Important
-Voting and payments are not enabled. The site does not collect votes or payment information. Payment processing, vote validation, results and a secured administration area must be implemented and tested before public voting begins.
+- Standard price: €1 or 1,000 Kz per vote.
+- Bulk package: 10 votes for €8 or 8,000 Kz (20% discount).
+- Payment methods displayed: PayPal and Multicaixa Express.
+- Voters submit their transaction reference and payment proof.
+- Submissions remain pending until an administrator manually verifies and approves the payment.
+- Only approved votes should be included in public rankings.
 
-## Adding nominees
-Edit `nominees.js`. Add a category object with a `title` and a `nominees` array. The page will render it automatically.
+## Administration
 
-© 2026 MS TikTok Awards.
+The restricted admin area is available at `/admin.html`. Administrator access depends on Supabase authentication and an authorised admin role in the `profiles` table.
+
+## Data and deployment
+
+The public site uses Supabase for live categories, nominees, approved vote totals and payment submissions. The Vercel project is connected to this GitHub repository and deploys from `main`.
+
+## Important launch checks
+
+Before opening public voting, verify the live Supabase schema and Row Level Security policies, test a complete payment-proof submission, confirm that an administrator can review and approve it, and confirm that only approved votes appear in rankings. Do not use real payment details for test transactions.
+
+## Nominees
+
+Nominee fallback data is maintained in `nominees.js`. Live category and nominee data is loaded from Supabase when configured.
+
+© 2026 MS TikTok PALOP Awards.
