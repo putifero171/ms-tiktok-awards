@@ -4,6 +4,8 @@
  const $=id=>document.getElementById(id);
  const tabs=$('category-tabs'),grid=$('nominee-grid'),title=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state'),visible=$('visible-count');
  const modal=$('vote-modal'),qty=$('vote-quantity'),method=$('payment-method'),amount=$('vote-amount'),ref=$('vote-reference'),recipient=$('payment-recipient'),copy=$('copy-reference');
+ const bulkOffer=$('bulk-offer'),bulkSave=$('bulk-savings');
+ function priceFor(quantity,paypal){const regular=paypal?quantity:quantity*1000;return quantity===10?(paypal?8:8000):regular;}
  const slug=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  try{if(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_PUBLISHABLE_KEY)sb=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY)}catch(e){console.error(e)}
  function fallbackData(){categories=fallback.map((c,i)=>({id:null,title:c.title,nominees:c.nominees.map((name,j)=>({id:null,name,image_path:null,display_order:j+1}))}));voteCounts={}}
@@ -29,7 +31,10 @@
   const selectedMethod=String(method.value||'paypal').trim().toLowerCase();
   const paypal=selectedMethod==='paypal';
   const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
-  amount.textContent=paypal?'€'+n.toLocaleString('pt-PT'):(n*1000).toLocaleString('pt-PT')+' Kz';
+  const total=priceFor(n,paypal),discounted=n===10;
+  amount.innerHTML=discounted?'<span class="price-was">'+(paypal?'€10':'10.000 Kz')+'</span> '+(paypal?'€8':'8.000 Kz'):(paypal?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
+  if(bulkOffer){bulkOffer.classList.toggle('is-selected',discounted);bulkOffer.setAttribute('aria-pressed',String(discounted));}
+  if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(paypal?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
   ref.textContent=reference;
   recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
   const express=$('express-instructions'),launch=$('payment-launch'),hint=$('payment-step-hint');
@@ -49,7 +54,7 @@
  }
  async function submitVote(){
   const button=$('submit-vote'),status=$('vote-submit-status'),file=$('payment-proof').files[0],email=$('voter-email').value.trim(),transaction=$('transaction-reference').value.trim();
-  const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal';
+  const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',total=priceFor(quantity,paypal);
   if(!sb||!selected.nomineeId){status.textContent='Não foi possível ligar à votação. Actualiza a página e tenta novamente.';return}
   if(!email||!$('voter-email').checkValidity()){status.textContent='Introduz um email válido.';return}
   if(!transaction){status.textContent='Introduz o ID ou referência da transacção.';return}
@@ -64,7 +69,7 @@
    proofPath=selected.nomineeId+'/'+unique+'.'+ext;
    const uploaded=await sb.storage.from('payment-proofs').upload(proofPath,file,{upsert:false,contentType:file.type});
    if(uploaded.error)throw new Error('Falha no envio do comprovativo para o armazenamento: '+uploaded.error.message);
-   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:paypal?'paypal':'multicaixa_express',currency:paypal?'EUR':'AOA',amount:paypal?quantity:quantity*1000,payment_reference:ref.textContent,transaction_reference:transaction,voter_email:email,proof_path:proofPath,status:'pending'};
+   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:paypal?'paypal':'multicaixa_express',currency:paypal?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:transaction,voter_email:email,proof_path:proofPath,status:'pending'};
    const saved=await sb.from('vote_submissions').insert(payload);
    if(saved.error){await sb.storage.from('payment-proofs').remove([proofPath]);throw new Error('O ficheiro foi enviado, mas a base de dados recusou a submissão: '+saved.error.message);}
    status.textContent='Submissão recebida! O teu voto está pendente de validação do pagamento. Ainda não foi contado.';
@@ -72,7 +77,7 @@
    setTimeout(()=>{closeVote();button.disabled=false;button.textContent='ENVIAR VOTO E COMPROVATIVO'},3500);
   }catch(error){console.error('Vote submission failed',error);status.textContent='Não foi possível registar. '+(error.message||'Tenta novamente ou contacta a organização.');button.disabled=false}
  }
- search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
+ search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{qty.value=10;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
