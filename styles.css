@@ -74,3 +74,6 @@
 
 /* Keep complete nominee photographs visible without cropping */
 .nominee-photo{object-fit:contain;object-position:center;background:#08090d}
+
+/* Keep Stripe's proof-free checkout from showing manual-upload fields */
+.vote-submit-fields[hidden]{display:none!important}
