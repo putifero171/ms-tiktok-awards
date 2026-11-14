@@ -140,3 +140,20 @@
  .overall-top-card:after{height:55px}
 }
 @media(prefers-reduced-motion:reduce){.overall-top-card{transition:none}.overall-top-card:hover{transform:none}}
+
+/* CEO message video feature */
+.ceo-message-section{max-width:1200px;margin:0 auto;padding:85px 7vw;display:grid;grid-template-columns:.8fr 1.2fr;gap:55px;align-items:center;border-bottom:1px solid #ffffff12}
+.ceo-message-copy h2{font:700 clamp(38px,5vw,64px)/1 var(--display);letter-spacing:-.06em;margin:17px 0}
+.ceo-message-copy>p{max-width:390px;color:var(--muted);font-size:13px;line-height:1.9}
+.ceo-signature{display:grid;gap:5px;margin-top:28px;padding-left:14px;border-left:2px solid var(--gold)}
+.ceo-signature strong{font:700 15px var(--display);color:var(--gold)}
+.ceo-signature span{font-size:9px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.ceo-video-frame{position:relative;overflow:hidden;aspect-ratio:16/9;background:radial-gradient(ellipse at 50% 40%,#24202a,#08090d 75%);border:1px solid #e9bd7250;box-shadow:0 25px 65px #0007}
+.ceo-video-frame:before{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #ffffff12;z-index:2}
+.ceo-video-frame video{display:block;width:100%;height:100%;object-fit:contain;background:#050609}
+.ceo-video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px}
+.ceo-video-placeholder[hidden],.ceo-message-section video[hidden]{display:none}
+.ceo-play-mark{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;padding-left:4px;border:1px solid var(--gold);color:var(--gold);background:#e9bd7212;font-size:19px}
+.ceo-video-placeholder strong{font:600 17px var(--display)}
+.ceo-video-placeholder small{font-size:10px;color:var(--muted)}
+@media(max-width:700px){.ceo-message-section{padding:65px 6vw;grid-template-columns:1fr;gap:28px}.ceo-message-copy h2{font-size:43px}.ceo-video-frame{width:100%}}
