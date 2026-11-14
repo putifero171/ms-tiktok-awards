@@ -13,9 +13,11 @@ alter table public.vote_submissions
   add column if not exists stripe_payment_intent_id text;
 
 alter table public.vote_submissions
-  add constraint vote_submissions_stripe_checkout_session_id_key unique (stripe_checkout_session_id);
+  drop constraint if exists vote_submissions_stripe_checkout_session_id_key,
+  drop constraint if exists vote_submissions_stripe_payment_intent_id_key;
 
 alter table public.vote_submissions
+  add constraint vote_submissions_stripe_checkout_session_id_key unique (stripe_checkout_session_id),
   add constraint vote_submissions_stripe_payment_intent_id_key unique (stripe_payment_intent_id);
 
 create or replace function public.validate_awards_vote_submission()
