@@ -24,7 +24,9 @@ module.exports = async (req, res) => {
   if (!webhookSecret || !supabaseUrl || !serviceKey) return res.status(503).send('Webhook is not configured.');
 
   try {
-    const rawBody = typeof req.body === 'string' ? req.body : (Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '');
+    const chunks = [];
+    for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const rawBody = Buffer.concat(chunks).toString('utf8');
     if (!rawBody) return res.status(400).send('Raw Stripe request body is required.');
     if (!verifyStripeSignature(rawBody, req.headers['stripe-signature'], webhookSecret)) {
       return res.status(400).send('Invalid Stripe signature.');
@@ -90,3 +92,5 @@ module.exports = async (req, res) => {
     return res.status(500).send('Webhook processing failed.');
   }
 };
+
+module.exports.config = { api: { bodyParser: false } };
