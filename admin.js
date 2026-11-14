@@ -17,6 +17,7 @@
   window.awardsAdminRole=role;
   const fullAccess=['super_admin','admin'].includes(role);
   $('team-panel').classList.toggle('admin-hidden',role!=='super_admin');
+  $('ceo-video-admin-panel').classList.toggle('admin-hidden',!['super_admin','admin','content_admin'].includes(role));
   ['add-category','save-nominee','delete-nominee','add-nominee'].forEach(id=>$(id).closest('.admin-panel').classList.toggle('admin-hidden',!fullAccess));
   $('submissions-body').closest('.admin-panel').classList.toggle('admin-hidden',!['super_admin','admin','vote_approver'].includes(role));
   say('dashboard-message','Sessão activa · '+({super_admin:'Super Admin',admin:'Admin',vote_approver:'Vote Approval',content_admin:'Content Admin'}[role]||role));
@@ -47,6 +48,20 @@
   if(error){say('dashboard-message',error.message);return}
   $('submissions-body').innerHTML=(data||[]).map(v=>'<tr><td>'+new Date(v.created_at).toLocaleString('pt-PT')+'</td><td>'+esc(v.nominees?.name)+'<br><small>'+esc(v.categories?.title)+'</small></td><td>'+v.quantity+'</td><td>'+esc(v.payment_method)+'<br>'+esc(v.amount)+' '+esc(v.currency)+'</td><td>'+esc(v.payer_name||v.voter_email)+'<br><small>'+esc(v.transaction_reference)+'</small></td><td>'+esc(v.payment_reference)+'</td><td>'+(v.proof_path?'<button class="admin-btn secondary" data-proof="'+esc(v.proof_path)+'">VER</button>':'—')+'</td><td><button class="admin-btn" data-approve="'+v.id+'">APROVAR</button><button class="admin-btn danger" data-reject="'+v.id+'">REJEITAR</button></td></tr>').join('')||'<tr><td colspan="8">Não existem submissões pendentes.</td></tr>';
  }
+ $('upload-ceo-video')?.addEventListener('click',async()=>{
+  const file=$('ceo-video-file').files[0],button=$('upload-ceo-video');
+  if(!file){say('ceo-video-status','Escolhe primeiro um ficheiro MP4.');return}
+  if(file.type!=='video/mp4'&&!file.name.toLowerCase().endsWith('.mp4')){say('ceo-video-status','Formato inválido. Escolhe um vídeo MP4.');return}
+  if(file.size>500*1024*1024){say('ceo-video-status','O vídeo excede o limite de 500 MB.');return}
+  button.disabled=true;button.textContent='A CARREGAR...';say('ceo-video-status','A carregar o vídeo. Mantém esta página aberta até terminar...');
+  try{
+   const {error}=await client.storage.from('ceo-message').upload('current.mp4',file,{upsert:true,contentType:'video/mp4',cacheControl:'60'});
+   if(error)throw error;
+   say('ceo-video-status','Vídeo carregado com sucesso. Já está disponível na página principal.');
+   $('ceo-video-file').value='';
+  }catch(error){say('ceo-video-status','Não foi possível carregar: '+error.message)}
+  finally{button.disabled=false;button.textContent='CARREGAR VÍDEO DO CEO'}
+ });
  $('refresh-submissions')?.addEventListener('click',loadSubmissions);
  $('submissions-body').addEventListener('click',async e=>{
   const proof=e.target.dataset.proof;if(proof){const {data,error}=await client.storage.from('payment-proofs').createSignedUrl(proof,90);if(error){say('dashboard-message',error.message);return}window.open(data.signedUrl,'_blank','noopener');return}
