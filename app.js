@@ -42,9 +42,12 @@
   express.hidden=paypal||stripe;express.style.display=(paypal||stripe)?'none':'block';
   launch.hidden=!paypal;launch.style.display=paypal?'inline-block':'none';
   const proofFields=document.querySelector('.vote-submit-fields');
-  if(proofFields)proofFields.hidden=stripe;
+  if(proofFields)proofFields.hidden=false;
+  ['label[for="transaction-reference"]','#transaction-reference','label[for="payment-proof"]','#payment-proof','.vote-submit-fields .admin-note'].forEach(selector=>{const field=document.querySelector(selector);if(field)field.hidden=stripe;});
   $('transaction-reference').required=!stripe;$('payment-proof').required=!stripe;
   $('voter-email').required=true;
+  const modalWarning=document.querySelector('.modal-warning');
+  if(modalWarning)modalWarning.textContent=stripe?'Depois de concluir o pagamento no Stripe, os votos serão registados automaticamente após confirmação segura.':'Submete apenas depois de concluíres o pagamento. A submissão fica pendente e só será contabilizada após verificação manual.';
   $('submit-vote').textContent=stripe?'PAGAR COM APPLE PAY / STRIPE':'ENVIAR VOTO E COMPROVATIVO';
   if(hint)hint.textContent=stripe?'Continua para o checkout seguro do Stripe. O Apple Pay aparece automaticamente quando o dispositivo e o navegador forem compatíveis. O pagamento é confirmado automaticamente.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
  }
