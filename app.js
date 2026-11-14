@@ -22,6 +22,22 @@
   if(!votes.error)(votes.data||[]).forEach(v=>voteCounts[v.nominee_id]=Number(v.vote_count)||0);
   if(!categories.length)fallbackData();
  }
+ let rankingRefreshInFlight=false;
+ async function refreshApprovedRanking(){
+  if(!sb||rankingRefreshInFlight||document.visibilityState==='hidden')return;
+  rankingRefreshInFlight=true;
+  try{
+   const {data,error}=await sb.from('approved_vote_totals').select('nominee_id,vote_count');
+   if(error)throw error;
+   const latest={};
+   (data||[]).forEach(v=>latest[v.nominee_id]=Number(v.vote_count)||0);
+   voteCounts=latest;
+   render();
+   const status=document.querySelector('.ranking-status');
+   if(status)status.textContent='AO VIVO';
+  }catch(error){console.warn('Ranking refresh failed:',error)}
+  finally{rankingRefreshInFlight=false}
+ }
  function imageUrl(path){return path&&sb?sb.storage.from('nominee-images').getPublicUrl(path).data.publicUrl:''}
  function openVote(category,person){selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('payer-name').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
  window.__awardsOpenVote=openVote;window.__awardsUpdatePayment=updatePayment;window.__awardsAppReady=true;
@@ -95,6 +111,8 @@
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
+ window.setInterval(refreshApprovedRanking,10000);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshApprovedRanking()});
  const paymentResult=new URLSearchParams(window.location.search).get('payment');
  if(paymentResult==='success'){
   const banner=document.createElement('div');banner.textContent='Pagamento iniciado com sucesso. Os votos só serão adicionados após validação do pagamento pela organização.';
