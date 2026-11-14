@@ -30,17 +30,23 @@
   const n=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1));qty.value=n;
   const selectedMethod=String(method.value||'paypal').trim().toLowerCase();
   const paypal=selectedMethod==='paypal';
+  const stripe=selectedMethod==='stripe';
   const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
-  const total=priceFor(n,paypal),discounted=n===10;
-  amount.innerHTML=discounted?'<span class="price-was">'+(paypal?'€10':'10.000 Kz')+'</span> '+(paypal?'€8':'8.000 Kz'):(paypal?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
+  const total=priceFor(n,paypal||stripe),discounted=n===10;
+  amount.innerHTML=discounted?'<span class="price-was">'+(paypal||stripe?'€10':'10.000 Kz')+'</span> '+(paypal||stripe?'€8':'8.000 Kz'):(paypal||stripe?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
   if(bulkOffer){bulkOffer.classList.toggle('is-selected',discounted);bulkOffer.setAttribute('aria-pressed',String(discounted));}
   if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(paypal?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
   ref.textContent=reference;
-  recipient.innerHTML=paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
+  recipient.innerHTML=stripe?'Apple Pay através do Stripe: <b>pagamento seguro</b>':paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
   const express=$('express-instructions'),launch=$('payment-launch'),hint=$('payment-step-hint');
-  express.hidden=paypal;express.style.display=paypal?'none':'block';
+  express.hidden=paypal||stripe;express.style.display=(paypal||stripe)?'none':'block';
   launch.hidden=!paypal;launch.style.display=paypal?'inline-block':'none';
-  if(hint)hint.textContent=paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
+  const proofFields=document.querySelector('.vote-submit-fields');
+  if(proofFields)proofFields.hidden=stripe;
+  $('transaction-reference').required=!stripe;$('payment-proof').required=!stripe;
+  $('voter-email').required=true;
+  $('submit-vote').textContent=stripe?'PAGAR COM APPLE PAY / STRIPE':'ENVIAR VOTO E COMPROVATIVO';
+  if(hint)hint.textContent=stripe?'Continua para o checkout seguro do Stripe. O Apple Pay aparece automaticamente quando o dispositivo e o navegador forem compatíveis. O pagamento é confirmado automaticamente.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
  }
 
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
@@ -54,9 +60,18 @@
  }
  async function submitVote(){
   const button=$('submit-vote'),status=$('vote-submit-status'),file=$('payment-proof').files[0],email=$('voter-email').value.trim(),transaction=$('transaction-reference').value.trim();
-  const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',total=priceFor(quantity,paypal);
+  const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',stripe=method.value==='stripe',total=priceFor(quantity,paypal||stripe);
   if(!sb||!selected.nomineeId){status.textContent='Não foi possível ligar à votação. Actualiza a página e tenta novamente.';return}
   if(!email||!$('voter-email').checkValidity()){status.textContent='Introduz um email válido.';return}
+  if(stripe){
+   button.disabled=true;status.textContent='A preparar o pagamento seguro...';
+   try{
+    const response=await fetch('/api/stripe/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({categoryId:selected.categoryId,nomineeId:selected.nomineeId,quantity,email})});
+    const data=await response.json();if(!response.ok||!data.url)throw new Error(data.error||'Não foi possível iniciar o pagamento.');
+    window.location.assign(data.url);
+   }catch(error){console.error('Stripe checkout error',error);status.textContent=error.message||'Erro ao iniciar pagamento.';button.disabled=false}
+   return;
+  }
   if(!transaction){status.textContent='Introduz o ID ou referência da transacção.';return}
   if(!file){status.textContent='Anexa o comprovativo de pagamento.';return}
   const allowed=['image/jpeg','image/png','image/webp','application/pdf'];
@@ -81,4 +96,10 @@
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
+ const paymentResult=new URLSearchParams(window.location.search).get('payment');
+ if(paymentResult==='success'){
+  const banner=document.createElement('div');banner.textContent='Pagamento iniciado com sucesso. Estamos a confirmar a transacção com segurança; os votos só serão adicionados após confirmação do Stripe.';
+  banner.style.cssText='position:fixed;left:16px;right:16px;bottom:16px;z-index:100000;padding:16px 20px;border:1px solid #42d9cf;border-radius:12px;background:#101a25;color:#fff;font:600 14px/1.5 sans-serif;box-shadow:0 8px 30px #0008';document.body.appendChild(banner);
+  window.history.replaceState({},'',window.location.pathname+window.location.hash);
+ }
 })();
