@@ -93,3 +93,50 @@
 .overall-top-empty,.overall-top-footnote{color:var(--muted);font-size:11px;line-height:1.7}
 .overall-top-footnote{margin:18px 0 0}
 @media(max-width:650px){.overall-top-section{padding:55px 6vw}.overall-top-grid{grid-template-columns:1fr;gap:10px}.overall-top-card{display:grid;grid-template-columns:72px 1fr;align-items:center;padding:13px}.overall-top-rank{grid-column:1/-1}.overall-top-photo{width:72px;height:88px}.overall-top-details h3{font-size:17px}}
+
+
+/* Awards podium treatment for the overall live top three */
+.overall-top-section{position:relative;isolation:isolate}
+.overall-top-section:before{content:"";position:absolute;z-index:-1;left:50%;top:105px;width:min(720px,90%);height:360px;transform:translateX(-50%);background:radial-gradient(ellipse,#e9bd7218 0%,#e9bd7208 42%,transparent 72%);pointer-events:none}
+.overall-top-grid{align-items:end;gap:18px;perspective:1000px}
+.overall-top-card{min-height:320px;padding:22px 20px 0;align-items:center;text-align:center;justify-content:flex-start;gap:13px;border-radius:5px 5px 0 0;box-shadow:0 18px 45px #0005;transition:transform .35s ease,border-color .35s ease,box-shadow .35s ease}
+.overall-top-card:after{content:"";position:absolute;z-index:-1;left:0;right:0;bottom:0;height:78px;background:linear-gradient(180deg,#ffffff08,#0005);border-top:1px solid #ffffff18}
+.overall-top-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px #0008}
+.overall-top-rank{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:800 11px var(--display);letter-spacing:.16em;padding:8px 13px;border:1px solid currentColor;border-radius:99px}
+.overall-top-rank:before{font-size:15px}
+.overall-top-rank-1{order:2;min-height:390px;padding-top:25px;border-color:#e9bd72;background:linear-gradient(155deg,#302516 0%,#17151a 52%,#0d0f15 100%);box-shadow:0 0 0 1px #e9bd7220,0 20px 65px #e9bd7218}
+.overall-top-rank-1 .overall-top-rank{color:#f5d58e;background:#e9bd7215}
+.overall-top-rank-1 .overall-top-rank:before{content:"♛"}
+.overall-top-rank-2{order:1;min-height:335px;border-color:#bfc8d880;background:linear-gradient(155deg,#20242b,#11131a 70%)}
+.overall-top-rank-2 .overall-top-rank{color:#c7d0dc;background:#c7d0dc12}
+.overall-top-rank-2 .overall-top-rank:before{content:"✦"}
+.overall-top-rank-3{order:3;min-height:305px;border-color:#bd805880;background:linear-gradient(155deg,#2a1d18,#11131a 70%)}
+.overall-top-rank-3 .overall-top-rank{color:#d69a70;background:#bd805812}
+.overall-top-rank-3 .overall-top-rank:before{content:"✦"}
+.overall-top-photo{width:100%;height:170px;max-width:210px;object-fit:contain;border:1px solid #ffffff20;border-radius:3px;background:radial-gradient(ellipse,#ffffff12,#08090d 75%);filter:drop-shadow(0 10px 18px #0008)}
+.overall-top-rank-1 .overall-top-photo{height:195px;max-width:230px;border-color:#e9bd7260}
+.overall-top-details{width:100%;justify-items:center;gap:8px;position:relative;z-index:1;padding-bottom:18px}
+.overall-top-details h3{font:700 clamp(17px,2vw,23px)/1.15 var(--display);letter-spacing:-.035em}
+.overall-top-rank-1 .overall-top-details h3{font-size:clamp(20px,2.3vw,27px);color:#fff2d4}
+.overall-top-category{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.overall-top-votes{font-size:15px;padding:7px 12px;border-radius:99px;background:#e9bd7212;border:1px solid #e9bd7235}
+.overall-top-rank-1 .overall-top-votes{font-size:17px;color:#f5d58e;background:#e9bd721c;border-color:#e9bd7270}
+.overall-top-footnote{text-align:center;margin-top:24px}
+@media(max-width:650px){
+ .overall-top-section:before{top:90px;height:260px}
+ .overall-top-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end}
+ .overall-top-card,.overall-top-rank-2,.overall-top-rank-3{min-height:0;padding:12px 6px 0;gap:9px;border-radius:4px 4px 0 0;display:flex;flex-direction:column}
+ .overall-top-rank-1{min-height:285px;padding-top:14px}
+ .overall-top-rank-2{min-height:245px}
+ .overall-top-rank-3{min-height:220px}
+ .overall-top-rank{font-size:8px;letter-spacing:.06em;padding:6px 7px;gap:4px}
+ .overall-top-rank:before{font-size:11px}
+ .overall-top-photo,.overall-top-rank-1 .overall-top-photo{width:100%;height:95px;max-width:none}
+ .overall-top-rank-1 .overall-top-photo{height:115px}
+ .overall-top-details{gap:6px;padding-bottom:13px}
+ .overall-top-details h3,.overall-top-rank-1 .overall-top-details h3{font-size:clamp(10px,3vw,14px);overflow-wrap:anywhere}
+ .overall-top-category{font-size:7px;line-height:1.35;letter-spacing:0}
+ .overall-top-votes,.overall-top-rank-1 .overall-top-votes{font-size:9px;padding:5px 6px}
+ .overall-top-card:after{height:55px}
+}
+@media(prefers-reduced-motion:reduce){.overall-top-card{transition:none}.overall-top-card:hover{transform:none}}
