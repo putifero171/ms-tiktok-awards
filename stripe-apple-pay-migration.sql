@@ -24,7 +24,7 @@ create or replace function public.validate_awards_vote_submission()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $awards_validation$
 declare
   nominee_record record;
   expected_amount numeric(12,2);
@@ -103,7 +103,7 @@ begin
 
   return new;
 end;
-$$;
+$awards_validation$;
 
 -- Enforce the validation function on every new vote, including trusted webhook inserts.
 drop trigger if exists validate_awards_vote_submission on public.vote_submissions;
