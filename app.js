@@ -45,6 +45,7 @@
   if(proofFields)proofFields.hidden=false;
   const revolutFields=revolut;
   $('payer-name-field').hidden=!revolutFields;$('voter-email-field').hidden=revolutFields;
+  document.querySelector('label[for="transaction-reference"]').hidden=revolutFields;$('transaction-reference').hidden=revolutFields;
   $('payer-name').required=revolutFields;$('voter-email').required=!revolutFields;
   $('transaction-reference').required=true;$('payment-proof').required=true;
   const modalWarning=document.querySelector('.modal-warning');
@@ -67,7 +68,8 @@
   const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',revolut=method.value==='revolut',total=priceFor(quantity,paypal||revolut);
   if(!sb||!selected.nomineeId){status.textContent='Não foi possível ligar à votação. Actualiza a página e tenta novamente.';return}
   if(revolut){if(!payerName){status.textContent='Introduz o nome de quem fez o pagamento.';return}}else if(!email||!$('voter-email').checkValidity()){status.textContent='Introduz um email válido.';return}
-  if(!transaction){status.textContent='Introduz o ID ou referência da transacção.';return}
+  const submittedTransaction=revolut?ref.textContent:transaction;
+  if(!submittedTransaction){status.textContent='Indica a referência da transacção.';return}
   if(!file){status.textContent='Anexa o comprovativo de pagamento.';return}
   const allowed=['image/jpeg','image/png','image/webp','application/pdf'];
   if(!allowed.includes(file.type)){status.textContent='Formato não suportado. Usa JPG, PNG, WEBP ou PDF.';return}
@@ -79,7 +81,7 @@
    proofPath=selected.nomineeId+'/'+unique+'.'+ext;
    const uploaded=await sb.storage.from('payment-proofs').upload(proofPath,file,{upsert:false,contentType:file.type});
    if(uploaded.error)throw new Error('Falha no envio do comprovativo para o armazenamento: '+uploaded.error.message);
-   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:revolut?'revolut':paypal?'paypal':'multicaixa_express',currency:(paypal||revolut)?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:transaction,voter_email:email||null,payer_name:revolut?payerName:null,proof_path:proofPath,status:'pending'};
+   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:revolut?'revolut':paypal?'paypal':'multicaixa_express',currency:(paypal||revolut)?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:submittedTransaction,voter_email:email||null,payer_name:revolut?payerName:null,proof_path:proofPath,status:'pending'};
    const saved=await sb.from('vote_submissions').insert(payload);
    if(saved.error){await sb.storage.from('payment-proofs').remove([proofPath]);throw new Error('O ficheiro foi enviado, mas a base de dados recusou a submissão: '+saved.error.message);}
    status.textContent='Submissão recebida! O teu voto está pendente de validação do pagamento. Ainda não foi contado.';
