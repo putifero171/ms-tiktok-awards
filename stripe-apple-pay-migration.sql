@@ -12,13 +12,11 @@ alter table public.vote_submissions
   add column if not exists stripe_checkout_session_id text,
   add column if not exists stripe_payment_intent_id text;
 
-create unique index if not exists vote_submissions_stripe_checkout_session_uidx
-  on public.vote_submissions(stripe_checkout_session_id)
-  where stripe_checkout_session_id is not null;
+alter table public.vote_submissions
+  add constraint vote_submissions_stripe_checkout_session_id_key unique (stripe_checkout_session_id);
 
-create unique index if not exists vote_submissions_stripe_payment_intent_uidx
-  on public.vote_submissions(stripe_payment_intent_id)
-  where stripe_payment_intent_id is not null;
+alter table public.vote_submissions
+  add constraint vote_submissions_stripe_payment_intent_id_key unique (stripe_payment_intent_id);
 
 create or replace function public.validate_awards_vote_submission()
 returns trigger
