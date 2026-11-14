@@ -22,6 +22,18 @@
   if(!votes.error)(votes.data||[]).forEach(v=>voteCounts[v.nominee_id]=Number(v.vote_count)||0);
   if(!categories.length)fallbackData();
  }
+ async function loadCeoVideo(){
+  if(!sb)return;
+  const {data,error}=await sb.storage.from('ceo-message').list('',{limit:20,sortBy:{column:'updated_at',order:'desc'}});
+  if(error){console.warn('CEO video unavailable:',error.message);return}
+  const file=(data||[]).find(item=>item.name==='current.mp4');
+  if(!file)return;
+  const {data:publicFile}=sb.storage.from('ceo-message').getPublicUrl('current.mp4');
+  const video=$('ceo-message-video'),placeholder=$('ceo-video-placeholder');
+  if(!video||!publicFile?.publicUrl)return;
+  video.src=publicFile.publicUrl+'?v='+encodeURIComponent(file.updated_at||file.created_at||Date.now());
+  video.hidden=false;if(placeholder)placeholder.hidden=true;
+ }
  let rankingRefreshInFlight=false;
  async function refreshApprovedRanking(){
   if(!sb||rankingRefreshInFlight||document.visibilityState==='hidden')return;
@@ -134,6 +146,7 @@
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
+ loadCeoVideo().catch(e=>console.error('CEO video could not be loaded.',e));
  window.setInterval(refreshApprovedRanking,10000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshApprovedRanking()});
  const paymentResult=new URLSearchParams(window.location.search).get('payment');
