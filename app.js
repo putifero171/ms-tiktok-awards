@@ -35,7 +35,7 @@
   const euroPayment=paypal||revolut||mbway;
   const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
   const total=priceFor(n,euroPayment),discounted=n===10;
-  amount.innerHTML=discounted?'<span class="price-was">'+(paypal||stripe?'€10':'10.000 Kz')+'</span> '+(paypal||stripe?'€8':'8.000 Kz'):(paypal||revolut?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
+  amount.innerHTML=discounted?'<span class="price-was">'+(euroPayment?'€10':'10.000 Kz')+'</span> '+(euroPayment?'€8':'8.000 Kz'):(euroPayment?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
   if(bulkOffer){bulkOffer.classList.toggle('is-selected',discounted);bulkOffer.setAttribute('aria-pressed',String(discounted));}
   if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(euroPayment?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
   ref.textContent=reference;
@@ -47,9 +47,9 @@
   if(proofFields)proofFields.hidden=false;
   const manualEuroFields=revolut||mbway;
   $('payer-name-field').hidden=!manualEuroFields;$('voter-email-field').hidden=manualEuroFields;
-  document.querySelector('label[for="transaction-reference"]').hidden=manualEuroFields;$('transaction-reference').hidden=revolutFields;
+  document.querySelector('label[for="transaction-reference"]').hidden=manualEuroFields;$('transaction-reference').hidden=manualEuroFields;
   $('payer-name').required=manualEuroFields;$('voter-email').required=!manualEuroFields;
-  $('transaction-reference').required=true;$('payment-proof').required=true;
+  $('transaction-reference').required=!manualEuroFields;$('payment-proof').required=true;
   const modalWarning=document.querySelector('.modal-warning');
   if(modalWarning)modalWarning.textContent='Submete apenas depois de concluíres o pagamento. A submissão fica pendente e só será contabilizada após verificação manual.';
   $('submit-vote').textContent='ENVIAR VOTO E COMPROVATIVO';
