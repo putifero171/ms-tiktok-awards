@@ -31,27 +31,29 @@
   const selectedMethod=String(method.value||'paypal').trim().toLowerCase();
   const paypal=selectedMethod==='paypal';
   const revolut=selectedMethod==='revolut';
+  const mbway=selectedMethod==='mbway';
+  const euroPayment=paypal||revolut||mbway;
   const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
-  const total=priceFor(n,paypal||revolut),discounted=n===10;
+  const total=priceFor(n,euroPayment),discounted=n===10;
   amount.innerHTML=discounted?'<span class="price-was">'+(paypal||stripe?'€10':'10.000 Kz')+'</span> '+(paypal||stripe?'€8':'8.000 Kz'):(paypal||revolut?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
   if(bulkOffer){bulkOffer.classList.toggle('is-selected',discounted);bulkOffer.setAttribute('aria-pressed',String(discounted));}
-  if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(paypal?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
+  if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(euroPayment?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
   ref.textContent=reference;
-  recipient.innerHTML=revolut?'Revolut: <b>revolut.me/fidaliag</b>':paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
+  recipient.innerHTML=mbway?'MB WAY: <b>926 372 367</b>':revolut?'Revolut: <b>revolut.me/fidaliag</b>':paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
   const express=$('express-instructions'),launch=$('payment-launch'),hint=$('payment-step-hint');
-  express.hidden=paypal||revolut;express.style.display=(paypal||revolut)?'none':'block';
-  launch.href=revolut?'https://revolut.me/fidaliag':'https://www.paypal.com/';launch.textContent=revolut?'ABRIR REVOLUT PARA PAGAR ↗':'ABRIR PAYPAL PARA PAGAR ↗';launch.hidden=!(paypal||revolut);launch.style.display=(paypal||revolut)?'inline-block':'none';
+  express.hidden=paypal||revolut||mbway;express.style.display=(paypal||revolut||mbway)?'none':'block';
+  launch.href=revolut?'https://revolut.me/fidaliag':paypal?'https://www.paypal.com/':'#';launch.textContent=revolut?'ABRIR REVOLUT PARA PAGAR ↗':paypal?'ABRIR PAYPAL PARA PAGAR ↗':'PAGAR POR MB WAY';launch.hidden=!(paypal||revolut);launch.style.display=(paypal||revolut)?'inline-block':'none';
   const proofFields=document.querySelector('.vote-submit-fields');
   if(proofFields)proofFields.hidden=false;
-  const revolutFields=revolut;
-  $('payer-name-field').hidden=!revolutFields;$('voter-email-field').hidden=revolutFields;
-  document.querySelector('label[for="transaction-reference"]').hidden=revolutFields;$('transaction-reference').hidden=revolutFields;
-  $('payer-name').required=revolutFields;$('voter-email').required=!revolutFields;
+  const manualEuroFields=revolut||mbway;
+  $('payer-name-field').hidden=!manualEuroFields;$('voter-email-field').hidden=manualEuroFields;
+  document.querySelector('label[for="transaction-reference"]').hidden=manualEuroFields;$('transaction-reference').hidden=revolutFields;
+  $('payer-name').required=manualEuroFields;$('voter-email').required=!manualEuroFields;
   $('transaction-reference').required=true;$('payment-proof').required=true;
   const modalWarning=document.querySelector('.modal-warning');
   if(modalWarning)modalWarning.textContent='Submete apenas depois de concluíres o pagamento. A submissão fica pendente e só será contabilizada após verificação manual.';
   $('submit-vote').textContent='ENVIAR VOTO E COMPROVATIVO';
-  if(hint)hint.textContent=revolut?'Abre o Revolut pelo botão acima, envia o valor exacto e regressa para indicar o teu nome e anexar a captura do pagamento. Usa a descrição do voto apresentada no site.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
+  if(hint)hint.textContent=mbway?'Abre a aplicação MB WAY, envia o valor exacto para o número 926 372 367 e regressa para indicar o nome do pagador e anexar o comprovativo. Usa a descrição do voto apresentada no site.':revolut?'Abre o Revolut pelo botão acima, envia o valor exacto e regressa para indicar o teu nome e anexar a captura do pagamento. Usa a descrição do voto apresentada no site.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
  }
 
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
@@ -65,10 +67,10 @@
  }
  async function submitVote(){
   const button=$('submit-vote'),status=$('vote-submit-status'),file=$('payment-proof').files[0],email=$('voter-email').value.trim(),payerName=$('payer-name').value.trim(),transaction=$('transaction-reference').value.trim();
-  const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',revolut=method.value==='revolut',total=priceFor(quantity,paypal||revolut);
+  const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',revolut=method.value==='revolut',mbway=method.value==='mbway',manualEuro=revolut||mbway,total=priceFor(quantity,paypal||manualEuro);
   if(!sb||!selected.nomineeId){status.textContent='Não foi possível ligar à votação. Actualiza a página e tenta novamente.';return}
-  if(revolut){if(!payerName){status.textContent='Introduz o nome de quem fez o pagamento.';return}}else if(!email||!$('voter-email').checkValidity()){status.textContent='Introduz um email válido.';return}
-  const submittedTransaction=revolut?ref.textContent:transaction;
+  if(manualEuro){if(!payerName){status.textContent='Introduz o nome de quem fez o pagamento.';return}}else if(!email||!$('voter-email').checkValidity()){status.textContent='Introduz um email válido.';return}
+  const submittedTransaction=manualEuro?ref.textContent:transaction;
   if(!submittedTransaction){status.textContent='Indica a referência da transacção.';return}
   if(!file){status.textContent='Anexa o comprovativo de pagamento.';return}
   const allowed=['image/jpeg','image/png','image/webp','application/pdf'];
@@ -81,7 +83,7 @@
    proofPath=selected.nomineeId+'/'+unique+'.'+ext;
    const uploaded=await sb.storage.from('payment-proofs').upload(proofPath,file,{upsert:false,contentType:file.type});
    if(uploaded.error)throw new Error('Falha no envio do comprovativo para o armazenamento: '+uploaded.error.message);
-   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:revolut?'revolut':paypal?'paypal':'multicaixa_express',currency:(paypal||revolut)?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:submittedTransaction,voter_email:email||null,payer_name:revolut?payerName:null,proof_path:proofPath,status:'pending'};
+   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:mbway?'mbway':revolut?'revolut':paypal?'paypal':'multicaixa_express',currency:(paypal||manualEuro)?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:submittedTransaction,voter_email:email||null,payer_name:manualEuro?payerName:null,proof_path:proofPath,status:'pending'};
    const saved=await sb.from('vote_submissions').insert(payload);
    if(saved.error){await sb.storage.from('payment-proofs').remove([proofPath]);throw new Error('O ficheiro foi enviado, mas a base de dados recusou a submissão: '+saved.error.message);}
    status.textContent='Submissão recebida! O teu voto está pendente de validação do pagamento. Ainda não foi contado.';
@@ -95,7 +97,7 @@
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
  const paymentResult=new URLSearchParams(window.location.search).get('payment');
  if(paymentResult==='success'){
-  const banner=document.createElement('div');banner.textContent='Pagamento iniciado com sucesso. Estamos a confirmar a transacção com segurança; os votos só serão adicionados após confirmação do Stripe.';
+  const banner=document.createElement('div');banner.textContent='Pagamento iniciado com sucesso. Os votos só serão adicionados após validação do pagamento pela organização.';
   banner.style.cssText='position:fixed;left:16px;right:16px;bottom:16px;z-index:100000;padding:16px 20px;border:1px solid #42d9cf;border-radius:12px;background:#101a25;color:#fff;font:600 14px/1.5 sans-serif;box-shadow:0 8px 30px #0008';document.body.appendChild(banner);
   window.history.replaceState({},'',window.location.pathname+window.location.hash);
  }
