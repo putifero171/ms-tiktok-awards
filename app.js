@@ -72,6 +72,29 @@
   if(hint)hint.textContent=mbway?'Abre a aplicação MB WAY, envia o valor exacto para o número 926 372 367 e regressa para indicar o nome do pagador e anexar o comprovativo. Usa a descrição do voto apresentada no site.':revolut?'Abre o Revolut pelo botão acima, envia o valor exacto e regressa para indicar o teu nome e anexar a captura do pagamento. Usa a descrição do voto apresentada no site.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
  }
 
+ function renderOverallTop3(){
+  const container=$('overall-top-grid');if(!container)return;
+  const all=[];
+  categories.forEach(category=>category.nominees.forEach((person,index)=>{
+   if(!person.id)return;
+   all.push({person,category,votes:Number(voteCounts[person.id])||0,index});
+  }));
+  all.sort((a,b)=>b.votes-a.votes||a.person.name.localeCompare(b.person.name,'pt'));
+  const top=all.slice(0,3);
+  if(!top.length){container.innerHTML='<p class="overall-top-empty">O ranking geral ficará disponível quando os primeiros votos forem aprovados.</p>';return}
+  container.innerHTML='';
+  top.forEach((entry,index)=>{
+   const card=document.createElement('article');card.className='overall-top-card overall-top-rank-'+(index+1);
+   const rank=document.createElement('span');rank.className='overall-top-rank';rank.textContent='#'+(index+1);
+   const photoUrl=imageUrl(entry.person.image_path);
+   if(photoUrl){const img=document.createElement('img');img.className='overall-top-photo';img.src=photoUrl;img.alt='Fotografia de '+entry.person.name;img.loading='lazy';img.onerror=()=>img.remove();card.appendChild(img)}
+   const details=document.createElement('div');details.className='overall-top-details';
+   const name=document.createElement('h3');name.textContent=entry.person.name;
+   const category=document.createElement('p');category.className='overall-top-category';category.textContent=entry.category.title;
+   const votes=document.createElement('strong');votes.className='overall-top-votes';votes.textContent=entry.votes.toLocaleString('pt-PT')+' votos';
+   details.append(name,category,votes);card.prepend(rank);card.appendChild(details);container.appendChild(card);
+  });
+ }
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
  function render(){
   if(!categories.length){title.textContent='Sem nomeados disponíveis';grid.innerHTML='';count.textContent='0 NOMEADOS';empty.hidden=false;return}
@@ -79,7 +102,7 @@
   const items=cat.nominees.map((person,i)=>({person,i,votes:voteCounts[person.id]||0})).filter(x=>!q||slug(x.person.name).includes(q)||slug(cat.title).includes(q));
   items.sort((a,b)=>b.votes-a.votes||a.i-b.i);grid.innerHTML='';
   items.forEach((x,pos)=>{const p=x.person,card=document.createElement('article');card.className='nominee-card ranking-card';const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(pos+1).padStart(2,'0');const star=document.createElement('span');star.className='nominee-star';star.textContent='✦';const url=imageUrl(p.image_path);if(url){const img=document.createElement('img');img.className='nominee-photo';img.src=url;img.alt='Fotografia de '+p.name;img.loading='lazy';img.onerror=()=>img.remove();card.appendChild(img)}const name=document.createElement('div');name.className='nominee-name';name.textContent=p.name;const votes=document.createElement('div');votes.className='nominee-votes';votes.innerHTML='<strong>'+x.votes.toLocaleString('pt-PT')+'</strong><span>VOTOS</span>';const vote=document.createElement('button');vote.className='nominee-vote-button';vote.type='button';vote.textContent='VOTAR';vote.addEventListener('click',()=>openVote(cat,p));card.append(no,star,name,votes,vote);grid.appendChild(card)});
-  count.textContent=items.length+' NOMEADOS';empty.hidden=items.length!==0;visible.textContent=String(categories.length).padStart(2,'0');renderTabs();const total=Object.values(voteCounts).reduce((a,b)=>a+b,0);const el=$('total-votes');if(el)el.textContent=total.toLocaleString('pt-PT');
+  count.textContent=items.length+' NOMEADOS';empty.hidden=items.length!==0;visible.textContent=String(categories.length).padStart(2,'0');renderTabs();const total=Object.values(voteCounts).reduce((a,b)=>a+b,0);const el=$('total-votes');if(el)el.textContent=total.toLocaleString('pt-PT');renderOverallTop3();
  }
  async function submitVote(){
   const button=$('submit-vote'),status=$('vote-submit-status'),file=$('payment-proof').files[0],email=$('voter-email').value.trim(),payerName=$('payer-name').value.trim(),transaction=$('transaction-reference').value.trim();
