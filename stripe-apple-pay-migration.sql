@@ -103,6 +103,12 @@ begin
 
   return new;
 end;
-$$;
+$;
+
+-- Enforce the validation function on every new vote, including trusted webhook inserts.
+drop trigger if exists validate_awards_vote_submission on public.vote_submissions;
+create trigger validate_awards_vote_submission
+before insert on public.vote_submissions
+for each row execute function public.validate_awards_vote_submission();
 
 commit;
