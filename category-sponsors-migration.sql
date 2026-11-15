@@ -38,7 +38,11 @@ create policy "Awards admins update category sponsor logos" on storage.objects
   bucket_id='category-sponsor-logos' and exists (
    select 1 from public.profiles p where p.id=auth.uid() and p.role in ('super_admin','admin','content_admin')
   )
- ) with check (bucket_id='category-sponsor-logos');
+ ) with check (
+  bucket_id='category-sponsor-logos' and exists (
+   select 1 from public.profiles p where p.id=auth.uid() and p.role in ('super_admin','admin','content_admin')
+  )
+ );
 drop policy if exists "Awards admins delete category sponsor logos" on storage.objects;
 create policy "Awards admins delete category sponsor logos" on storage.objects
  for delete to authenticated using (
