@@ -35,7 +35,7 @@
   </section>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <header class="topbar"><a class="brand" href="#"><img class="brand-logo" src="/marcelo-palop-transparent-optimized.png" alt="MS TikTok PALOP Awards 2026"><span>MS <b>TIKTOK AWARDS</b><small>PALOP · 2026</small></span></a>
-    <nav><a href="#home">Início</a><a href="#categories">Categorias</a><a href="#about">Sobre</a></nav>
+    <nav><a href="#home">Início</a><a href="#categories">Categorias</a><a href="#minha-conta">A Minha Conta</a><a href="#about">Sobre</a></nav>
     <a class="top-cta" href="#categories">Ver nomeados <span>↗</span></a><button class="menu-toggle" aria-label="Abrir menu">☰</button>
   </header>
   <main>
@@ -81,6 +81,27 @@
       <div class="reference-guide"><span class="notice-icon">✦</span><div><h3>Referência obrigatória do pagamento</h3><p>Na referência/descrição do pagamento, escreve exactamente:</p><strong class="reference-example">Voto X [Categoria] X [Nome] X [Nº de votos]</strong><p>Exemplos: <b>Voto X Ody Carla</b> · <b>Voto X MAF Muteba</b> · <b>Voto X Dj Celson</b></p><p>Se votares em nomeados diferentes, faz pagamentos separados e usa a referência correspondente a cada nomeado.</p><p>Depois, envia o comprovativo e a referência da transacção para validação. <b>O voto só será contabilizado depois de a organização confirmar e aprovar o pagamento.</b></p></div></div>
       <p class="payment-status">Guarda o comprovativo e o ID da transacção. Cada pagamento deve corresponder a uma única submissão e a um único nomeado. A aprovação é manual.</p>
     </section>
+    <section class="account-section" id="minha-conta">
+      <div class="section-heading"><div><div class="eyebrow">A TUA PARTICIPAÇÃO</div><h2>A minha <span class="gradient-text">conta.</span></h2></div><p>Cria uma conta para acompanhares os teus votos aprovados e continuares a apoiar os teus nomeados favoritos.</p></div>
+      <div class="account-shell">
+        <div class="account-auth" id="account-auth">
+          <div class="account-auth-copy"><span class="account-mark">MS</span><h3>Entra na comunidade.</h3><p>O registo é gratuito. Podes continuar a votar sem criar conta, mas uma conta permite-te consultar o teu histórico de votos aprovados.</p></div>
+          <form id="account-form" class="account-form">
+            <label for="account-email">Email</label><input id="account-email" type="email" autocomplete="email" placeholder="o-teu@email.com" required>
+            <label for="account-password">Palavra-passe</label><input id="account-password" type="password" autocomplete="current-password" minlength="8" placeholder="Mínimo de 8 caracteres" required>
+            <div class="account-auth-actions"><button class="button-primary" id="account-login" type="submit">INICIAR SESSÃO</button><button class="account-register" id="account-register" type="button">CRIAR CONTA</button></div>
+            <p id="account-auth-status" class="account-status" role="status"></p>
+          </form>
+        </div>
+        <div class="account-dashboard" id="account-dashboard" hidden>
+          <div class="account-dashboard-head"><div><span class="eyebrow">ÁREA PESSOAL</span><h3 id="account-welcome">A tua actividade</h3><p id="account-user-email"></p></div><button class="account-logout" id="account-logout" type="button">TERMINAR SESSÃO</button></div>
+          <div class="account-stats"><article><strong id="account-total-votes">0</strong><span>VOTOS APROVADOS</span></article><article><strong id="account-categories-count">0</strong><span>CATEGORIAS</span></article><article><strong id="account-orders-count">0</strong><span>SUBMISSÕES APROVADAS</span></article></div>
+          <div class="account-history-head"><h4>Histórico de votos</h4><span>APENAS VOTOS APROVADOS</span></div>
+          <div id="account-history" class="account-history"><p class="account-empty">A carregar o teu histórico...</p></div>
+          <p class="account-privacy-note">Por segurança, só podes consultar os votos associados à tua própria conta. Os votos submetidos sem sessão iniciada não aparecem automaticamente neste histórico.</p>
+        </div>
+      </div>
+    </section>
     <section class="about-section" id="about"><div class="about-number">MS / 26</div><div><div class="eyebrow">MAIS DO QUE UM PRÉMIO</div><h2>Uma noite.<br><span class="gradient-text">Muitas histórias.</span></h2></div><div class="about-copy"><p>Os MS TikTok PALOP Awards 2026 celebram criadores, artistas e personalidades que inspiram conversas e movimentam a cultura digital dos PALOP.</p><p class="disclaimer">Evento independente para a comunidade PALOP. Não é afiliado, patrocinado ou oficialmente associado ao TikTok ou à ByteDance.</p></div></section>
   </main>
   <footer><a class="brand" href="#"><span class="brand-mark">MS</span><span>MS <b>TIKTOK AWARDS</b><small>PALOP · 2026</small></span></a><span>© 2026 MS TikTok PALOP Awards. Todos os direitos reservados.</span><span class="footer-credit">Desenvolvido por: <b>BlackMoon Services World Wide</b></span><a href="#home">VOLTAR AO TOPO ↑</a></footer>
@@ -109,7 +130,7 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="nominees.js"></script>
-  <script src="app.js?v=20261114-3"></script>
+  <script src="app.js?v=20261115-account1"></script>
 
   <script>
   (() => {
