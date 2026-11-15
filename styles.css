@@ -197,3 +197,22 @@
 .category-sponsor-details strong{font:600 16px var(--display);overflow-wrap:anywhere}
 .category-sponsor-card>a{margin-left:auto;color:var(--cyan);font-size:9px;letter-spacing:.12em;white-space:nowrap}
 @media(max-width:650px){.category-sponsor-card{padding:13px;gap:12px}.category-sponsor-logo{width:54px;height:54px;flex-basis:54px}.category-sponsor-details strong{font-size:14px}}
+
+
+/* 24-hour Mega Black Friday promotion */
+.black-friday-banner{max-width:1280px;margin:28px auto;padding:28px 34px;display:flex;align-items:center;justify-content:space-between;gap:24px;background:radial-gradient(ellipse at 10% 50%,#6c1728 0%,#211018 45%,#100d12 100%);border:1px solid #ff4c68a0;box-shadow:0 15px 50px #ff24401a}
+.black-friday-banner[hidden],.black-friday-modal-offer[hidden]{display:none!important}
+.black-friday-kicker,.black-friday-count-label,.black-friday-modal-kicker{font-size:9px;letter-spacing:.2em;font-weight:800;color:#ff9aaa}
+.black-friday-copy h2{font:700 clamp(32px,5vw,54px)/1 var(--display);margin:10px 0;color:#fff}
+.black-friday-copy h2 span{color:#ff7187;margin-left:12px}
+.black-friday-copy p{margin:0;color:#e8d9dd;font-size:13px}.black-friday-copy p strong{color:#fff}
+.black-friday-action{display:grid;justify-items:center;gap:9px;min-width:210px}
+.black-friday-timer{font:700 28px var(--display);letter-spacing:.08em;color:#fff;font-variant-numeric:tabular-nums}
+.black-friday-cta{display:inline-block;padding:13px 18px;background:#ff526e;color:#18070b;font-size:10px;font-weight:900;letter-spacing:.12em}
+.black-friday-modal-offer{width:100%;display:grid;gap:10px;margin:14px 0;padding:16px 18px;text-align:left;background:linear-gradient(110deg,#40121e,#21131a);border:1px solid #ff526e;color:white;cursor:pointer}
+.black-friday-modal-offer:hover,.black-friday-modal-offer.is-selected{box-shadow:0 0 0 1px #ff526e70,0 8px 28px #ff526e20}
+.black-friday-modal-main{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font:700 21px var(--display)}
+.black-friday-modal-main>b{color:#ff8295;font-size:28px}.black-friday-modal-main small{font:500 11px var(--font);color:#fff}
+.black-friday-modal-foot{font-size:9px;letter-spacing:.15em;color:#ffb5c0;font-weight:800}
+@media(max-width:900px){.black-friday-banner{margin:24px 6vw}}
+@media(max-width:650px){.black-friday-banner{margin:18px 6vw;padding:22px;display:grid;justify-items:start}.black-friday-action{justify-items:start}.black-friday-modal-main{font-size:18px}.black-friday-modal-main>b{font-size:24px}}
