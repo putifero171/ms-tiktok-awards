@@ -51,7 +51,7 @@
   finally{rankingRefreshInFlight=false}
  }
  function imageUrl(path){return path&&sb?sb.storage.from('nominee-images').getPublicUrl(path).data.publicUrl:''}
- function openVote(category,person){selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('payer-name').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
+ function openVote(category,person){if(Date.now()>=new Date('2026-12-27T23:59:59+00:00').getTime()){const closedStatus=$('vote-submit-status');if(closedStatus)closedStatus.textContent='A votação encerrou a 27 de Dezembro de 2026.';return}selected={category:category.title,nominee:person.name,categoryId:category.id,nomineeId:person.id};$('vote-nominee').textContent=person.name;$('vote-category').textContent=category.title;qty.value=1;$('voter-email').value='';$('payer-name').value='';$('transaction-reference').value='';$('payment-proof').value='';$('vote-submit-status').textContent='';$('submit-vote').disabled=!sb||!person.id;updatePayment();modal.hidden=false;document.body.classList.add('modal-open')}
  window.__awardsOpenVote=openVote;window.__awardsUpdatePayment=updatePayment;window.__awardsAppReady=true;
  function closeVote(){modal.hidden=true;document.body.classList.remove('modal-open')}
  function updatePayment(){
@@ -194,6 +194,7 @@
  }
  async function submitVote(){
   const button=$('submit-vote'),status=$('vote-submit-status'),file=$('payment-proof').files[0],email=$('voter-email').value.trim(),payerName=$('payer-name').value.trim(),transaction=$('transaction-reference').value.trim();
+  if(Date.now()>=new Date('2026-12-27T23:59:59+00:00').getTime()){status.textContent='A votação encerrou a 27 de Dezembro de 2026. Já não são aceites novas submissões.';button.disabled=true;return}
   const quantity=Math.max(1,Math.min(1000,parseInt(qty.value,10)||1)),paypal=method.value==='paypal',revolut=method.value==='revolut',mbway=method.value==='mbway',manualEuro=revolut||mbway,total=priceFor(quantity,paypal||manualEuro);
   if(!sb||!selected.nomineeId){status.textContent='Não foi possível ligar à votação. Actualiza a página e tenta novamente.';return}
   if(manualEuro){if(!payerName){status.textContent='Introduz o nome de quem fez o pagamento.';return}}else if(!email||!$('voter-email').checkValidity()){status.textContent='Introduz um email válido.';return}
