@@ -1,7 +1,7 @@
 (() => {
  const client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY);
  const $=id=>document.getElementById(id);
- let categories=[],nominees=[];
+ let categories=[],nominees=[],categorySponsors=[];
  const say=(id,msg)=>$(id).textContent=msg;
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  async function currentSession(){const {data:{session}}=await client.auth.getSession();if(session)await showDashboard(session);else{$('auth-view').classList.remove('admin-hidden');$('dashboard').classList.add('admin-hidden')}}
@@ -21,7 +21,7 @@
   ['add-category','save-nominee','delete-nominee','add-nominee'].forEach(id=>$(id).closest('.admin-panel').classList.toggle('admin-hidden',!fullAccess));
   $('submissions-body').closest('.admin-panel').classList.toggle('admin-hidden',!['super_admin','admin','vote_approver'].includes(role));
   say('dashboard-message','Sessão activa · '+({super_admin:'Super Admin',admin:'Admin',vote_approver:'Vote Approval',content_admin:'Content Admin'}[role]||role));
-  if(role!=='vote_approver') await loadCategories();
+  if(role!=='vote_approver') await loadCategories();\n  $('category-sponsors-panel').classList.toggle('admin-hidden',!['super_admin','admin','content_admin'].includes(role));\n  if(['super_admin','admin','content_admin'].includes(role)) await loadCategorySponsors();
   if(role!=='vote_approver') await loadNominees();
   if(role!=='content_admin') await loadSubmissions();
  }
@@ -31,6 +31,45 @@
   if(error){say('dashboard-message',error.message);return}categories=data||[];
   ['edit-category','new-category'].forEach(id=>{$(id).innerHTML=categories.map(c=>'<option value="'+c.id+'">'+esc(c.title)+'</option>').join('')});
  }
+ async function loadCategorySponsors(){
+  const {data,error}=await client.from('category_sponsors').select('id,category_id,sponsor_name,logo_path,website_url,is_active').order('sponsor_name');
+  if(error){say('sponsor-admin-status','Não foi possível carregar patrocinadores: '+error.message);return}
+  categorySponsors=data||[];
+  $('sponsor-category').innerHTML=categories.map(c=>'<option value="'+c.id+'">'+esc(c.title)+'</option>').join('');
+  $('category-sponsors-body').innerHTML=categorySponsors.map(s=>{const c=categories.find(x=>x.id===s.category_id);return '<tr><td>'+esc(c?.title||'Categoria removida')+'</td><td>'+esc(s.sponsor_name)+'</td><td>'+(s.logo_path?'Logótipo carregado':'—')+'</td></tr>'}).join('')||'<tr><td colspan="3">Ainda não existem patrocinadores.</td></tr>';
+  loadSelectedSponsor();
+ }
+ function loadSelectedSponsor(){
+  const item=categorySponsors.find(s=>s.category_id===$('sponsor-category').value);
+  $('sponsor-name').value=item?.sponsor_name||'';$('sponsor-website').value=item?.website_url||'';$('sponsor-logo').value='';
+ }
+ $('sponsor-category')?.addEventListener('change',loadSelectedSponsor);
+ $('save-category-sponsor')?.addEventListener('click',async()=>{
+  const category_id=$('sponsor-category').value,sponsor_name=$('sponsor-name').value.trim(),websiteRaw=$('sponsor-website').value.trim(),file=$('sponsor-logo').files[0];
+  if(!category_id||!sponsor_name)return say('sponsor-admin-status','Escolhe uma categoria e indica o nome do patrocinador.');
+  let website_url=null;if(websiteRaw){try{const parsed=new URL(websiteRaw);if(!['http:','https:'].includes(parsed.protocol))throw new Error();website_url=parsed.href}catch{return say('sponsor-admin-status','Indica um website válido começado por https://')}}
+  say('sponsor-admin-status','A guardar patrocinador...');
+  const existing=categorySponsors.find(s=>s.category_id===category_id);let logo_path=existing?.logo_path||null;
+  if(file){
+   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)return say('sponsor-admin-status','Usa PNG, JPG ou WEBP até 5 MB.');
+   const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg',path=category_id+'/'+Date.now()+'.'+ext;
+   const {error:uploadError}=await client.storage.from('category-sponsor-logos').upload(path,file,{upsert:true,contentType:file.type});
+   if(uploadError)return say('sponsor-admin-status','Erro no logótipo: '+uploadError.message);
+   logo_path=path;
+  }
+  const payload={category_id,sponsor_name,website_url,logo_path,is_active:true,updated_at:new Date().toISOString()};
+  const {error}=await client.from('category_sponsors').upsert(payload,{onConflict:'category_id'});
+  if(error)return say('sponsor-admin-status','Erro ao guardar: '+error.message);
+  say('sponsor-admin-status','Patrocinador guardado e publicado.');await loadCategorySponsors();
+ });
+ $('remove-category-sponsor')?.addEventListener('click',async()=>{
+  const category_id=$('sponsor-category').value;if(!category_id)return;
+  const existing=categorySponsors.find(s=>s.category_id===category_id);if(!existing)return say('sponsor-admin-status','Esta categoria não tem patrocinador.');
+  if(!confirm('Remover o patrocinador desta categoria?'))return;
+  const {error}=await client.from('category_sponsors').delete().eq('category_id',category_id);
+  if(error)return say('sponsor-admin-status','Não foi possível remover: '+error.message);
+  say('sponsor-admin-status','Patrocínio removido.');await loadCategorySponsors();
+ });
  async function loadNominees(){
   const {data,error}=await client.from('nominees').select('id,name,category_id,image_path,display_order').eq('is_active',true).order('display_order');
   if(error){say('dashboard-message',error.message);return}nominees=data||[];populateNominees();
