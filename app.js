@@ -1,6 +1,6 @@
 (() => {
  const fallback=window.AWARD_CATEGORIES||[];
- let categories=[],active=0,currentUser=null,selected={category:"",nominee:"",categoryId:null,nomineeId:null},voteCounts={},sb=null;
+ let categories=[],categorySponsors={},active=0,currentUser=null,selected={category:"",nominee:"",categoryId:null,nomineeId:null},voteCounts={},sb=null;
  const $=id=>document.getElementById(id);
  const tabs=$('category-tabs'),grid=$('nominee-grid'),title=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state'),visible=$('visible-count');
  const modal=$('vote-modal'),qty=$('vote-quantity'),method=$('payment-method'),amount=$('vote-amount'),ref=$('vote-reference'),recipient=$('payment-recipient'),copy=$('copy-reference');
@@ -9,6 +9,12 @@
  const slug=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  try{if(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_PUBLISHABLE_KEY)sb=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY)}catch(e){console.error(e)}
  function fallbackData(){categories=fallback.map((c,i)=>({id:null,title:c.title,nominees:c.nominees.map((name,j)=>({id:null,name,image_path:null,display_order:j+1}))}));voteCounts={}}
+ async function loadCategorySponsors(){
+  if(!sb){categorySponsors={};return}
+  const {data,error}=await sb.from('category_sponsors').select('category_id,sponsor_name,logo_path,website_url').eq('is_active',true);
+  if(error){console.warn('Category sponsors unavailable:',error.message);categorySponsors={};return}
+  categorySponsors={};(data||[]).forEach(item=>categorySponsors[item.category_id]=item);
+ }
  async function loadLiveData(){
   if(!sb){fallbackData();return}
   const [cats,people,votes]=await Promise.all([
@@ -184,9 +190,24 @@
   });
  }
  function renderTabs(){tabs.innerHTML='';categories.forEach((c,i)=>{const b=document.createElement('button');b.className='category-tab'+(i===active?' active':'');b.innerHTML='<span class="tab-no">'+String(i+1).padStart(2,'0')+'</span>'+c.title;b.addEventListener('click',()=>{active=i;render()});tabs.appendChild(b)})}
+
+ function renderCategorySponsor(category){
+  const host=$('category-sponsor-area');if(!host)return;host.innerHTML='';
+  const sponsor=categorySponsors[category.id];if(!sponsor)return;
+  const card=document.createElement('article');card.className='category-sponsor-card';
+  const logoWrap=document.createElement('div');logoWrap.className='category-sponsor-logo';
+  if(sponsor.logo_path&&sb){const image=document.createElement('img');image.src=sb.storage.from('category-sponsor-logos').getPublicUrl(sponsor.logo_path).data.publicUrl;image.alt=sponsor.sponsor_name+' logo';image.loading='lazy';logoWrap.appendChild(image)}else{logoWrap.textContent='✦'}
+  const details=document.createElement('div');details.className='category-sponsor-details';
+  const label=document.createElement('span');label.textContent='CATEGORIA PATROCINADA POR';
+  const name=document.createElement('strong');name.textContent=sponsor.sponsor_name;details.append(label,name);
+  card.append(logoWrap,details);
+  if(sponsor.website_url){const link=document.createElement('a');link.href=sponsor.website_url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='VISITAR ↗';card.appendChild(link)}
+  host.appendChild(card);
+ }
  function render(){
   if(!categories.length){title.textContent='Sem nomeados disponíveis';grid.innerHTML='';count.textContent='0 NOMEADOS';empty.hidden=false;return}
   active=Math.min(active,categories.length-1);const q=slug(search.value.trim()),cat=categories[active];title.textContent=cat.title;
+  renderCategorySponsor(cat);
   const items=cat.nominees.map((person,i)=>({person,i,votes:voteCounts[person.id]||0})).filter(x=>!q||slug(x.person.name).includes(q)||slug(cat.title).includes(q));
   items.sort((a,b)=>b.votes-a.votes||a.i-b.i);grid.innerHTML='';
   items.forEach((x,pos)=>{const p=x.person,card=document.createElement('article');card.className='nominee-card ranking-card';const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(pos+1).padStart(2,'0');const star=document.createElement('span');star.className='nominee-star';star.textContent='✦';const url=imageUrl(p.image_path);if(url){const img=document.createElement('img');img.className='nominee-photo';img.src=url;img.alt='Fotografia de '+p.name;img.loading='lazy';img.onerror=()=>img.remove();card.appendChild(img)}const name=document.createElement('div');name.className='nominee-name';name.textContent=p.name;const votes=document.createElement('div');votes.className='nominee-votes';votes.innerHTML='<strong>'+x.votes.toLocaleString('pt-PT')+'</strong><span>VOTOS</span>';const vote=document.createElement('button');vote.className='nominee-vote-button';vote.type='button';vote.textContent='VOTAR';vote.addEventListener('click',()=>openVote(cat,p));card.append(no,star,name,votes,vote);grid.appendChild(card)});
