@@ -1,6 +1,6 @@
 (() => {
  const fallback=window.AWARD_CATEGORIES||[];
- let categories=[],active=0,selected={category:"",nominee:"",categoryId:null,nomineeId:null},voteCounts={},sb=null;
+ let categories=[],active=0,currentUser=null,selected={category:"",nominee:"",categoryId:null,nomineeId:null},voteCounts={},sb=null;
  const $=id=>document.getElementById(id);
  const tabs=$('category-tabs'),grid=$('nominee-grid'),title=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state'),visible=$('visible-count');
  const modal=$('vote-modal'),qty=$('vote-quantity'),method=$('payment-method'),amount=$('vote-amount'),ref=$('vote-reference'),recipient=$('payment-recipient'),copy=$('copy-reference');
@@ -84,6 +84,34 @@
   if(hint)hint.textContent=mbway?'Abre a aplicação MB WAY, envia o valor exacto para o número 926 372 367 e regressa para indicar o nome do pagador e anexar o comprovativo. Usa a descrição do voto apresentada no site.':revolut?'Abre o Revolut pelo botão acima, envia o valor exacto e regressa para indicar o teu nome e anexar a captura do pagamento. Usa a descrição do voto apresentada no site.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
  }
 
+ async function loadAccountHistory(){
+  const history=$('account-history');if(!currentUser||!history)return;
+  history.innerHTML='<p class="account-empty">A carregar os votos aprovados...</p>';
+  const {data,error}=await sb.from('vote_submissions').select('id,quantity,created_at,payment_method,amount,currency,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).eq('status','approved').order('created_at',{ascending:false}).limit(100);
+  if(error){history.innerHTML='<p class="account-empty">Não foi possível carregar o histórico. Tenta novamente mais tarde.</p>';console.error('Account history:',error);return}
+  const rows=data||[],total=rows.reduce((sum,row)=>sum+(Number(row.quantity)||0),0),cats=new Set(rows.map(row=>row.category?.title).filter(Boolean));
+  $('account-total-votes').textContent=total.toLocaleString('pt-PT');$('account-categories-count').textContent=String(cats.size);$('account-orders-count').textContent=String(rows.length);
+  if(!rows.length){history.innerHTML='<p class="account-empty">Ainda não tens votos aprovados associados a esta conta. Quando a organização aprovar os teus votos, aparecerão aqui.</p>';return}
+  history.innerHTML=rows.map(row=>{const date=new Date(row.created_at).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'});const money=row.currency==='EUR'?'€'+Number(row.amount).toLocaleString('pt-PT'):(Number(row.amount).toLocaleString('pt-PT')+' Kz');return '<article class="account-history-row"><div class="account-history-main"><strong>'+escapeAccountText(row.nominee?.name||'Nomeado')+'</strong><span>'+escapeAccountText(row.category?.title||'Categoria')+' · '+date+'</span></div><div class="account-history-meta"><b>'+Number(row.quantity)+' votos</b><span>'+money+'</span></div></article>'}).join('');
+ }
+ function escapeAccountText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ async function syncAccount(session){
+  currentUser=session?.user||null;
+  const auth=$('account-auth'),dashboard=$('account-dashboard');if(!auth||!dashboard)return;
+  auth.hidden=!!currentUser;dashboard.hidden=!currentUser;
+  if(!currentUser)return;
+  $('account-user-email').textContent=currentUser.email||'';
+  $('account-welcome').textContent='Bem-vindo à tua conta';
+  await loadAccountHistory();
+ }
+ async function initAccount(){
+  if(!sb)return;
+  $('account-form')?.addEventListener('submit',async event=>{event.preventDefault();const status=$('account-auth-status'),email=$('account-email').value.trim(),password=$('account-password').value;status.textContent='A iniciar sessão...';const {data,error}=await sb.auth.signInWithPassword({email,password});if(error){status.textContent=error.message;return}await syncAccount(data.session)});
+  $('account-register')?.addEventListener('click',async()=>{const status=$('account-auth-status'),email=$('account-email').value.trim(),password=$('account-password').value;if(!email||password.length<8){status.textContent='Introduz um email válido e uma palavra-passe com pelo menos 8 caracteres.';return}status.textContent='A criar conta...';const {data,error}=await sb.auth.signUp({email,password});if(error){status.textContent=error.message;return}if(data.session){await syncAccount(data.session);status.textContent='Conta criada com sucesso.'}else status.textContent='Conta criada. Verifica o teu email para confirmar o registo e depois inicia sessão.'});
+  $('account-logout')?.addEventListener('click',async()=>{const {error}=await sb.auth.signOut();if(error){$('account-auth-status').textContent=error.message;return}await syncAccount(null)});
+  sb.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>syncAccount(session),0)});
+  const {data:{session}}=await sb.auth.getSession();await syncAccount(session);
+ }
  function renderOverallTop3(){
   const container=$('overall-top-grid');if(!container)return;
   const all=[];
@@ -134,7 +162,7 @@
    proofPath=selected.nomineeId+'/'+unique+'.'+ext;
    const uploaded=await sb.storage.from('payment-proofs').upload(proofPath,file,{upsert:false,contentType:file.type});
    if(uploaded.error)throw new Error('Falha no envio do comprovativo para o armazenamento: '+uploaded.error.message);
-   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,quantity,payment_method:mbway?'mbway':revolut?'revolut':paypal?'paypal':'multicaixa_express',currency:(paypal||manualEuro)?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:submittedTransaction,voter_email:email||null,payer_name:manualEuro?payerName:null,proof_path:proofPath,status:'pending'};
+   const payload={category_id:selected.categoryId,nominee_id:selected.nomineeId,user_id:currentUser?.id||null,quantity,payment_method:mbway?'mbway':revolut?'revolut':paypal?'paypal':'multicaixa_express',currency:(paypal||manualEuro)?'EUR':'AOA',amount:total,payment_reference:ref.textContent,transaction_reference:submittedTransaction,voter_email:email||null,payer_name:manualEuro?payerName:null,proof_path:proofPath,status:'pending'};
    const saved=await sb.from('vote_submissions').insert(payload);
    if(saved.error){await sb.storage.from('payment-proofs').remove([proofPath]);throw new Error('O ficheiro foi enviado, mas a base de dados recusou a submissão: '+saved.error.message);}
    status.textContent='Submissão recebida! O teu voto está pendente de validação do pagamento. Ainda não foi contado.';
@@ -144,7 +172,7 @@
  }
  search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{qty.value=10;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
- fallbackData();render();
+ initAccount().catch(error=>console.error('Account initialisation failed:',error));\n fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
  loadCeoVideo().catch(e=>console.error('CEO video could not be loaded.',e));
  window.setInterval(refreshApprovedRanking,10000);
