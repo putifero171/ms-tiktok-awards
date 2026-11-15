@@ -51,6 +51,10 @@
       <div class="hero-bottom"><span>01 / 08</span><span class="scroll-line"></span><span>DESCOBRE OS NOMEADOS</span></div>
     </section>
     <section class="intro-strip"><span class="strip-star">✳</span><p>O talento não passa despercebido. <b>O talento merece palco.</b></p><span class="strip-year">MMXXVI</span></section>
+    <section class="black-friday-banner" id="black-friday-promo" aria-labelledby="black-friday-title">
+      <div class="black-friday-copy"><span class="black-friday-kicker">⚡ MEGA BLACK FRIDAY · PROMOÇÃO FLASH</span><h2 id="black-friday-title">100 VOTOS <span>€50</span></h2><p>Ou <strong>50.000 Kz</strong> · 50% de desconto · Oferta válida durante 24 horas.</p></div>
+      <div class="black-friday-action"><div class="black-friday-count-label">A PROMOÇÃO TERMINA EM</div><div class="black-friday-timer" id="black-friday-timer">24:00:00</div><a href="#categories" class="black-friday-cta">APROVEITAR PROMOÇÃO ↗</a></div>
+    </section>
     <section class="ceo-message-section" id="mensagem-ceo" aria-labelledby="ceo-message-title">
       <div class="ceo-message-copy"><div class="eyebrow">UMA MENSAGEM ESPECIAL</div><h2 id="ceo-message-title">Mensagem <span class="gradient-text">do CEO.</span></h2><p>Uma palavra de Marcelo Smith sobre a visão, a missão e o significado dos MS TikTok PALOP Awards 2026.</p><div class="ceo-signature"><strong>Marcelo Smith</strong><span>CEO &amp; Founder</span></div></div>
       <div class="ceo-video-frame" id="ceo-video-frame"><div class="ceo-video-placeholder" id="ceo-video-placeholder"><span class="ceo-play-mark">▶</span><strong>Mensagem oficial em breve</strong><small>O vídeo será publicado aqui pela organização.</small></div><video id="ceo-message-video" controls playsinline preload="metadata" hidden aria-label="Mensagem do CEO Marcelo Smith"></video></div>
@@ -98,7 +102,12 @@
       <div class="eyebrow">MS TIKTOK PALOP AWARDS 2026</div><h2 id="vote-modal-title">Apoia o teu <span class="gradient-text">nomeado.</span></h2>
       <p class="modal-selection"><b id="vote-nominee"></b><span id="vote-category"></span></p>
       <label for="vote-quantity">Quantidade de votos</label><input id="vote-quantity" type="number" min="1" max="1000" value="1">
-      <button class="bulk-offer" id="bulk-offer" type="button" aria-pressed="false"><span class="bulk-offer-top"><b>PACK ESPECIAL · 10 VOTOS</b><span class="bulk-badge">-20%</span></span><span class="bulk-offer-price"><strong>€8</strong><span>ou 8.000 Kz</span></span><span class="bulk-offer-foot" id="bulk-savings">Poupa 20% ao escolher 10 votos</span><span class="bulk-offer-action">APLICAR PACOTE ↗</span></button>
+      <button class="black-friday-modal-offer" id="black-friday-offer" type="button" aria-pressed="false">
+         <span class="black-friday-modal-kicker">⚡ MEGA BLACK FRIDAY · SÓ 24 HORAS</span>
+         <span class="black-friday-modal-main"><strong>100 VOTOS</strong><b>€50 <small>ou 50.000 Kz</small></b></span>
+         <span class="black-friday-modal-foot">50% DE DESCONTO · ESCOLHE ESTA OFERTA</span>
+       </button>
+       <button class="bulk-offer" id="bulk-offer" type="button" aria-pressed="false"><span class="bulk-offer-top"><b>PACK ESPECIAL · 10 VOTOS</b><span class="bulk-badge">-20%</span></span><span class="bulk-offer-price"><strong>€8</strong><span>ou 8.000 Kz</span></span><span class="bulk-offer-foot" id="bulk-savings">Poupa 20% ao escolher 10 votos</span><span class="bulk-offer-action">APLICAR PACOTE ↗</span></button>
       <label for="payment-method">Método de pagamento</label><select id="payment-method"><option value="paypal">PayPal — €1 por voto</option><option value="multicaixa_express">Multicaixa Express — 1.000 Kz por voto</option><option value="revolut">Revolut — €1 por voto</option><option value="mbway">MB WAY — €1 por voto</option></select>
       <div class="modal-total"><span>Total a pagar</span><strong id="vote-amount">€1</strong></div>
       <div class="payment-action-panel"><div class="modal-payment-details" id="payment-recipient">PayPal: <b>Marcelolemossmith@gmail.com</b></div><div class="express-instructions" id="express-instructions" hidden>Abre a aplicação Multicaixa Express e envia o valor indicado para o número apresentado. Titular: Marcelo Smith.</div><a class="payment-launch" id="payment-launch" href="https://www.paypal.com/" target="_blank" rel="noopener">ABRIR PAYPAL PARA PAGAR ↗</a><p class="payment-step-hint" id="payment-step-hint">Conclui o pagamento na tua conta PayPal. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.</p></div>
