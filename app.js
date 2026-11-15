@@ -4,8 +4,16 @@
  const $=id=>document.getElementById(id);
  const tabs=$('category-tabs'),grid=$('nominee-grid'),title=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state'),visible=$('visible-count');
  const modal=$('vote-modal'),qty=$('vote-quantity'),method=$('payment-method'),amount=$('vote-amount'),ref=$('vote-reference'),recipient=$('payment-recipient'),copy=$('copy-reference');
- const bulkOffer=$('bulk-offer'),bulkSave=$('bulk-savings');
- function priceFor(quantity,euros){const regular=euros?quantity:quantity*1000;return quantity===10?(euros?8:8000):regular;}
+ const bulkOffer=$('bulk-offer'),bulkSave=$('bulk-savings'),blackFridayOffer=$('black-friday-offer');
+ const BLACK_FRIDAY_END=new Date('2026-11-16T20:48:00+00:00').getTime();
+ function blackFridayActive(){return Date.now()<BLACK_FRIDAY_END;}
+ function priceFor(quantity,euros){if(quantity===100&&blackFridayActive())return euros?50:50000;const regular=euros?quantity:quantity*1000;return quantity===10?(euros?8:8000):regular;}
+ function updateBlackFridayTimer(){
+  const banner=$('black-friday-promo'),timer=$('black-friday-timer'),offer=$('black-friday-offer');
+  const remaining=BLACK_FRIDAY_END-Date.now(),active=remaining>0;
+  if(banner)banner.hidden=!active;if(offer)offer.hidden=!active;
+  if(timer&&active){const seconds=Math.floor(remaining/1000),hours=Math.floor(seconds/3600),minutes=Math.floor((seconds%3600)/60),secs=seconds%60;timer.textContent=String(hours).padStart(2,'0')+':'+String(minutes).padStart(2,'0')+':'+String(secs).padStart(2,'0');}
+ }
  const slug=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  try{if(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_PUBLISHABLE_KEY)sb=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY)}catch(e){console.error(e)}
  function fallbackData(){categories=fallback.map((c,i)=>({id:null,title:c.title,nominees:c.nominees.map((name,j)=>({id:null,name,image_path:null,display_order:j+1}))}));voteCounts={}}
@@ -68,8 +76,9 @@
   const mbway=selectedMethod==='mbway';
   const euroPayment=paypal||revolut||mbway;
   const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
-  const total=priceFor(n,euroPayment),discounted=n===10;
-  amount.innerHTML=discounted?'<span class="price-was">'+(euroPayment?'€10':'10.000 Kz')+'</span> '+(euroPayment?'€8':'8.000 Kz'):(euroPayment?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
+  const promoDiscounted=n===100&&blackFridayActive(),total=priceFor(n,euroPayment),discounted=n===10;
+  amount.innerHTML=promoDiscounted?'<span class="price-was">'+(euroPayment?'€100':'100.000 Kz')+'</span> '+(euroPayment?'€50':'50.000 Kz'):discounted?'<span class="price-was">'+(euroPayment?'€10':'10.000 Kz')+'</span> '+(euroPayment?'€8':'8.000 Kz'):(euroPayment?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
+  if(blackFridayOffer){blackFridayOffer.classList.toggle('is-selected',promoDiscounted);blackFridayOffer.setAttribute('aria-pressed',String(promoDiscounted));}
   if(bulkOffer){bulkOffer.classList.toggle('is-selected',discounted);bulkOffer.setAttribute('aria-pressed',String(discounted));}
   if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(euroPayment?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
   ref.textContent=reference;
@@ -240,9 +249,10 @@
    setTimeout(()=>{closeVote();button.disabled=false;button.textContent='ENVIAR VOTO E COMPROVATIVO'},3500);
   }catch(error){console.error('Vote submission failed',error);status.textContent='Não foi possível registar. '+(error.message||'Tenta novamente ou contacta a organização.');button.disabled=false}
  }
- search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{qty.value=10;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
+ search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{qty.value=10;updatePayment()});if(blackFridayOffer)blackFridayOffer.addEventListener('click',()=>{if(!blackFridayActive())return;qty.value=100;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  initAccount().catch(error=>console.error('Account initialisation failed:',error));
+ updateBlackFridayTimer();setInterval(updateBlackFridayTimer,1000);
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
  loadCeoVideo().catch(e=>console.error('CEO video could not be loaded.',e));
