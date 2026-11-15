@@ -26,9 +26,9 @@ Deno.serve(async (req) => {
       return json({ error: "Username ou palavra-passe inválidos." }, 400);
     }
 
-    const url = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const url = Deno.env.get("PROJECT_URL")!;
+    const anonKey = Deno.env.get("PUBLIC_KEY")!;
+    const serviceKey = Deno.env.get("SERVICE_ROLE_KEY")!;
 
     const admin = createClient(url, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
