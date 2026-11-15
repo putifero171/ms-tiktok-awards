@@ -22,7 +22,8 @@
   $('submissions-body').closest('.admin-panel').classList.toggle('admin-hidden',!['super_admin','admin','vote_approver'].includes(role));
   say('dashboard-message','Sessão activa · '+({super_admin:'Super Admin',admin:'Admin',vote_approver:'Vote Approval',content_admin:'Content Admin'}[role]||role));
   if(role!=='vote_approver') await loadCategories();
-  $('category-sponsors-panel').classList.toggle('admin-hidden',!['super_admin','admin','content_admin'].includes(role));\n  if(['super_admin','admin','content_admin'].includes(role)) await loadCategorySponsors();
+  $('category-sponsors-panel').classList.toggle('admin-hidden',!['super_admin','admin','content_admin'].includes(role));
+  if(['super_admin','admin','content_admin'].includes(role)) await loadCategorySponsors();
   if(role!=='vote_approver') await loadNominees();
   if(role!=='content_admin') await loadSubmissions();
  }
