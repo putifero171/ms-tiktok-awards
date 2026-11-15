@@ -12,6 +12,7 @@
   const banner=$('black-friday-promo'),timer=$('black-friday-timer'),offer=$('black-friday-offer');
   const remaining=BLACK_FRIDAY_END-Date.now(),active=remaining>0;
   if(banner)banner.hidden=!active;if(offer)offer.hidden=!active;
+  if(!active&&modal&&!modal.hidden&&Number(qty.value)===100)updatePayment();
   if(timer&&active){const seconds=Math.floor(remaining/1000),hours=Math.floor(seconds/3600),minutes=Math.floor((seconds%3600)/60),secs=seconds%60;timer.textContent=String(hours).padStart(2,'0')+':'+String(minutes).padStart(2,'0')+':'+String(secs).padStart(2,'0');}
  }
  const slug=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
