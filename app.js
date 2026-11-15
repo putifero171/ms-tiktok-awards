@@ -91,7 +91,7 @@
   if(error){history.innerHTML='<p class="account-empty">Não foi possível carregar o histórico. Tenta novamente mais tarde.</p>';console.error('Account history:',error);return}
   const rows=data||[],total=rows.reduce((sum,row)=>sum+(Number(row.quantity)||0),0),cats=new Set(rows.map(row=>row.category?.title).filter(Boolean));
   $('account-total-votes').textContent=total.toLocaleString('pt-PT');$('account-categories-count').textContent=String(cats.size);$('account-orders-count').textContent=String(rows.length);
-  if(!rows.length){history.innerHTML='<p class="account-empty">Ainda não tens votos aprovados associados a esta conta. Quando a organização aprovar os teus votos, aparecerão aqui.</p>';return}
+  if(!rows.length){history.innerHTML='<p class="account-empty">Ainda não tens votos aprovados associados a esta conta.</p>';return}
   history.innerHTML=rows.map(row=>{const date=new Date(row.created_at).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'});const money=row.currency==='EUR'?'€'+Number(row.amount).toLocaleString('pt-PT'):(Number(row.amount).toLocaleString('pt-PT')+' Kz');return '<article class="account-history-row"><div class="account-history-main"><strong>'+escapeAccountText(row.nominee?.name||'Nomeado')+'</strong><span>'+escapeAccountText(row.category?.title||'Categoria')+' · '+date+'</span></div><div class="account-history-meta"><b>'+Number(row.quantity)+' votos</b><span>'+money+'</span></div></article>'}).join('');
  }
  function escapeAccountText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -100,44 +100,60 @@
   const auth=$('account-auth'),dashboard=$('account-dashboard');if(!auth||!dashboard)return;
   auth.hidden=!!currentUser;dashboard.hidden=!currentUser;
   if(!currentUser)return;
-  $('account-user-email').textContent=currentUser.email||'';
-  $('account-welcome').textContent='Bem-vindo à tua conta';
+  $('account-user-email').textContent=currentUser.user_metadata?.username||'';
+  $('account-welcome').textContent='Bem-vindo, '+(currentUser.user_metadata?.username||'');
   await loadAccountHistory();
  }
  async function initAccount(){
   if(!sb)return;
-  $('account-form')?.addEventListener('submit',async event=>{event.preventDefault();const status=$('account-auth-status'),email=$('account-email').value.trim(),password=$('account-password').value;status.textContent='A iniciar sessão...';const {data,error}=await sb.auth.signInWithPassword({email,password});if(error){status.textContent=error.message;return}await syncAccount(data.session)});
-  $('account-register')?.addEventListener('click',async()=>{const status=$('account-auth-status'),email=$('account-email').value.trim(),password=$('account-password').value;if(!email||password.length<8){status.textContent='Introduz um email válido e uma palavra-passe com pelo menos 8 caracteres.';return}status.textContent='A criar conta...';const {data,error}=await sb.auth.signUp({email,password});if(error){status.textContent=error.message;return}if(data.session){await syncAccount(data.session);status.textContent='Conta criada com sucesso.'}else status.textContent='Conta criada. Verifica o teu email para confirmar o registo e depois inicia sessão.'});
-  $('account-logout')?.addEventListener('click',async()=>{const {error}=await sb.auth.signOut();if(error){$('account-auth-status').textContent=error.message;return}await syncAccount(null)});
-  sb.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>syncAccount(session),0)});
-  const {data:{session}}=await sb.auth.getSession();await syncAccount(session);
- }
- async function loadAccountHistory(){
-  const history=$('account-history');if(!currentUser||!history)return;
-  history.innerHTML='<p class="account-empty">A carregar os votos aprovados...</p>';
-  const {data,error}=await sb.from('vote_submissions').select('id,quantity,created_at,payment_method,amount,currency,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).eq('status','approved').order('created_at',{ascending:false}).limit(100);
-  if(error){history.innerHTML='<p class="account-empty">Não foi possível carregar o histórico. Tenta novamente mais tarde.</p>';console.error('Account history:',error);return}
-  const rows=data||[],total=rows.reduce((sum,row)=>sum+(Number(row.quantity)||0),0),cats=new Set(rows.map(row=>row.category?.title).filter(Boolean));
-  $('account-total-votes').textContent=total.toLocaleString('pt-PT');$('account-categories-count').textContent=String(cats.size);$('account-orders-count').textContent=String(rows.length);
-  if(!rows.length){history.innerHTML='<p class="account-empty">Ainda não tens votos aprovados associados a esta conta. Quando a organização aprovar os teus votos, aparecerão aqui.</p>';return}
-  history.innerHTML=rows.map(row=>{const date=new Date(row.created_at).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'});const money=row.currency==='EUR'?'€'+Number(row.amount).toLocaleString('pt-PT'):(Number(row.amount).toLocaleString('pt-PT')+' Kz');return '<article class="account-history-row"><div class="account-history-main"><strong>'+escapeAccountText(row.nominee?.name||'Nomeado')+'</strong><span>'+escapeAccountText(row.category?.title||'Categoria')+' · '+date+'</span></div><div class="account-history-meta"><b>'+Number(row.quantity)+' votos</b><span>'+money+'</span></div></article>'}).join('');
- }
- function escapeAccountText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
- async function syncAccount(session){
-  currentUser=session?.user||null;
-  const auth=$('account-auth'),dashboard=$('account-dashboard');if(!auth||!dashboard)return;
-  auth.hidden=!!currentUser;dashboard.hidden=!currentUser;
-  if(!currentUser)return;
-  $('account-user-email').textContent=currentUser.email||'';
-  $('account-welcome').textContent='Bem-vindo à tua conta';
-  await loadAccountHistory();
- }
- async function initAccount(){
-  if(!sb)return;
-  $('account-form')?.addEventListener('submit',async event=>{event.preventDefault();const status=$('account-auth-status'),email=$('account-email').value.trim(),password=$('account-password').value;status.textContent='A iniciar sessão...';const {data,error}=await sb.auth.signInWithPassword({email,password});if(error){status.textContent=error.message;return}await syncAccount(data.session)});
-  $('account-register')?.addEventListener('click',async()=>{const status=$('account-auth-status'),email=$('account-email').value.trim(),password=$('account-password').value;if(!email||password.length<8){status.textContent='Introduz um email válido e uma palavra-passe com pelo menos 8 caracteres.';return}status.textContent='A criar conta...';const {data,error}=await sb.auth.signUp({email,password});if(error){status.textContent=error.message;return}if(data.session){await syncAccount(data.session);status.textContent='Conta criada com sucesso.'}else status.textContent='Conta criada. Verifica o teu email para confirmar o registo e depois inicia sessão.'});
-  $('account-logout')?.addEventListener('click',async()=>{const {error}=await sb.auth.signOut();if(error){$('account-auth-status').textContent=error.message;return}await syncAccount(null)});
-  sb.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>syncAccount(session),0)});
+  const status=$('account-auth-status');
+  const username=()=> $('account-username').value.trim();
+  const password=()=> $('account-password').value;
+  const validUsername=value=>/^[a-zA-Z0-9._-]{3,24}$/.test(value);
+  $('account-login')?.addEventListener('click',async()=>{
+   const name=username();if(!validUsername(name)||password().length<8){status.textContent='Confirma o username (3–24 caracteres) e a palavra-passe (mínimo 8).';return}
+   status.textContent='A iniciar sessão...';
+   const {data,error}=await sb.functions.invoke('username-login',{body:{username:name,password:password()}});
+   if(error){status.textContent='Não foi possível iniciar sessão. Verifica os dados e tenta novamente.';console.error(error);return}
+   if(!data?.access_token||!data?.refresh_token){status.textContent=data?.error||'Resposta de autenticação inválida.';return}
+   const {data:sessionData,error:sessionError}=await sb.auth.setSession({access_token:data.access_token,refresh_token:data.refresh_token});
+   if(sessionError){status.textContent='Não foi possível iniciar sessão. Tenta novamente.';console.error(sessionError);return}
+   await syncAccount(sessionData.session);status.textContent='';
+  });
+  $('account-register')?.addEventListener('click',async()=>{
+   const name=username(),email=$('account-email').value.trim(),pass=password();
+   if(!validUsername(name)){status.textContent='O username deve ter 3–24 caracteres: letras, números, ponto, hífen ou underscore.';return}
+   if(!email){status.textContent='Introduz o email para recuperação da conta.';return}
+   if(pass.length<8){status.textContent='A palavra-passe deve ter pelo menos 8 caracteres.';return}
+   status.textContent='A criar conta...';
+   const {data,error}=await sb.functions.invoke('username-signup',{body:{username:name,email,password:pass}});
+   if(error){status.textContent=data?.error||'Não foi possível criar a conta. Verifica os dados.';console.error(error);return}
+   status.textContent=data?.message||'Conta criada. Verifica o teu email para confirmar o registo.';
+  });
+  $('account-forgot')?.addEventListener('click',async()=>{
+   const email=$('account-email').value.trim();
+   if(!email){status.textContent='Introduz o email associado à tua conta para receberes o link de recuperação.';return}
+   status.textContent='A enviar o link de recuperação...';
+   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/#minha-conta'});
+   status.textContent=error?'Não foi possível enviar o email. Confirma o endereço e tenta novamente.':'Se o endereço estiver registado, receberás um email com o link para recuperar a palavra-passe.';
+  });
+  $('account-save-password')?.addEventListener('click',async()=>{
+   const next=$('account-new-password').value,recoveryStatus=$('account-recovery-status');
+   if(next.length<8){recoveryStatus.textContent='A nova palavra-passe deve ter pelo menos 8 caracteres.';return}
+   const {error}=await sb.auth.updateUser({password:next});
+   if(error){recoveryStatus.textContent='Não foi possível actualizar a palavra-passe. Abre novamente o link do email.';return}
+   recoveryStatus.textContent='Palavra-passe actualizada. Já podes entrar com o teu username.';
+   $('account-new-password').value='';
+   await sb.auth.signOut();
+  });
+  $('account-logout')?.addEventListener('click',async()=>{const {error}=await sb.auth.signOut();if(error){status.textContent=error.message;return}await syncAccount(null)});
+  sb.auth.onAuthStateChange((event,session)=>{
+   window.setTimeout(async()=>{
+    if(event==='PASSWORD_RECOVERY'){$('account-recovery').hidden=false;$('account-auth').hidden=true;$('account-dashboard').hidden=true;}
+    else if(event==='SIGNED_OUT'){$('account-recovery').hidden=true;await syncAccount(null)}
+    else if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')await syncAccount(session);
+   },0);
+  });
   const {data:{session}}=await sb.auth.getSession();await syncAccount(session);
  }
  function renderOverallTop3(){
