@@ -110,7 +110,9 @@
   const username=()=> $('account-username').value.trim();
   const password=()=> $('account-password').value;
   const validUsername=value=>/^[a-zA-Z0-9._-]{3,24}$/.test(value);
+  const emailWrap=$('account-email-wrap');
   $('account-login')?.addEventListener('click',async()=>{
+   if(emailWrap)emailWrap.hidden=true;
    const name=username();if(!validUsername(name)||password().length<8){status.textContent='Confirma o username (3–24 caracteres) e a palavra-passe (mínimo 8).';return}
    status.textContent='A iniciar sessão...';
    const {data,error}=await sb.functions.invoke('username-login',{body:{username:name,password:password()}});
@@ -121,6 +123,7 @@
    await syncAccount(sessionData.session);status.textContent='';
   });
   $('account-register')?.addEventListener('click',async()=>{
+   if(emailWrap)emailWrap.hidden=false;
    const name=username(),email=$('account-email').value.trim(),pass=password();
    if(!validUsername(name)){status.textContent='O username deve ter 3–24 caracteres: letras, números, ponto, hífen ou underscore.';return}
    if(!email){status.textContent='Introduz o email para recuperação da conta.';return}
@@ -131,6 +134,7 @@
    status.textContent=data?.message||'Conta criada. Verifica o teu email para confirmar o registo.';
   });
   $('account-forgot')?.addEventListener('click',async()=>{
+   if(emailWrap)emailWrap.hidden=false;
    const email=$('account-email').value.trim();
    if(!email){status.textContent='Introduz o email associado à tua conta para receberes o link de recuperação.';return}
    status.textContent='A enviar o link de recuperação...';
