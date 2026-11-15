@@ -26,9 +26,15 @@ Deno.serve(async (req) => {
       return json({ error: "Username ou palavra-passe inválidos." }, 400);
     }
 
-    const url = Deno.env.get("PROJECT_URL")!;
-    const anonKey = Deno.env.get("PUBLIC_KEY")!;
-    const serviceKey = Deno.env.get("SERVICE_ROLE_KEY")!;
+    const url = Deno.env.get("PROJECT_URL");
+    const anonKey = Deno.env.get("PUBLIC_KEY");
+    const serviceKey = Deno.env.get("SERVICE_ROLE_KEY");
+    if (!url || !anonKey || !serviceKey) {
+      console.error("[username-login] Missing required secrets", {
+        PROJECT_URL: !!url, PUBLIC_KEY: !!anonKey, SERVICE_ROLE_KEY: !!serviceKey,
+      });
+      return json({ error: "Serviço de autenticação mal configurado." }, 500);
+    }
 
     const admin = createClient(url, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -39,17 +45,30 @@ Deno.serve(async (req) => {
       .eq("username_normalized", normalized)
       .maybeSingle();
 
-    if (lookupError || !record) return json({ error: "Credenciais inválidas." }, 401);
+    if (lookupError) {
+      console.error("[username-login] Username lookup failed:", lookupError.message, lookupError.code);
+      return json({ error: "Não foi possível consultar o username. Tenta novamente." }, 500);
+    }
+    if (!record) {
+      console.warn("[username-login] Username not found:", normalized);
+      return json({ error: "Credenciais inválidas." }, 401);
+    }
 
     const { data: userData, error: userError } = await admin.auth.admin.getUserById(record.user_id);
     const email = userData?.user?.email;
-    if (userError || !email) return json({ error: "Não foi possível iniciar sessão." }, 401);
+    if (userError || !email) {
+      console.error("[username-login] Auth user lookup failed:", userError?.message || "Email missing", userError?.code);
+      return json({ error: "Não foi possível localizar a conta de autenticação." }, 500);
+    }
 
     const authClient = createClient(url, anonKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
     const { data, error } = await authClient.auth.signInWithPassword({ email, password });
-    if (error || !data.session) return json({ error: "Credenciais inválidas." }, 401);
+    if (error || !data.session) {
+      console.warn("[username-login] Password sign-in rejected:", error?.message || "No session returned", error?.code);
+      return json({ error: "Credenciais inválidas." }, 401);
+    }
 
     return json({
       access_token: data.session.access_token,
@@ -57,7 +76,8 @@ Deno.serve(async (req) => {
       token_type: data.session.token_type,
       expires_in: data.session.expires_in,
     });
-  } catch {
+  } catch (error) {
+    console.error("[username-login] Unexpected error:", error instanceof Error ? error.message : String(error));
     return json({ error: "Pedido inválido." }, 400);
   }
 });
