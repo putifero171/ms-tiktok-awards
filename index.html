@@ -208,8 +208,9 @@
       document.getElementById('count-seconds').textContent = pad(seconds);
     }
     document.body.classList.add('launch-locked');
+    let timer = null;
     updateLaunchCountdown();
-    const timer = window.setInterval(updateLaunchCountdown, 1000);
+    if (!gate.classList.contains('launch-gate-ended')) timer = window.setInterval(updateLaunchCountdown, 1000);
   })();
   </script>
 </body></html>
