@@ -216,3 +216,7 @@
 .black-friday-modal-foot{font-size:9px;letter-spacing:.15em;color:#ffb5c0;font-weight:800}
 @media(max-width:900px){.black-friday-banner{margin:24px 6vw}}
 @media(max-width:650px){.black-friday-banner{margin:18px 6vw;padding:22px;display:grid;justify-items:start}.black-friday-action{justify-items:start}.black-friday-modal-main{font-size:18px}.black-friday-modal-main>b{font-size:24px}}
+
+/* Celebration effects: decorative canvas never blocks navigation or voting. */
+.awards-fx-canvas{position:fixed;inset:0;z-index:6;pointer-events:none;display:block;overflow:hidden}
+@media(prefers-reduced-motion:reduce){.awards-fx-canvas{display:none}}
