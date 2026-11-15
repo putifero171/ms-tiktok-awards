@@ -56,6 +56,13 @@
       <div class="ceo-video-frame" id="ceo-video-frame"><div class="ceo-video-placeholder" id="ceo-video-placeholder"><span class="ceo-play-mark">▶</span><strong>Mensagem oficial em breve</strong><small>O vídeo será publicado aqui pela organização.</small></div><video id="ceo-message-video" controls playsinline preload="metadata" hidden aria-label="Mensagem do CEO Marcelo Smith"></video></div>
     </section>
     <section class="ranking-overview" aria-label="Resumo da votação"><div class="ranking-stat"><span class="eyebrow">VOTOS REGISTADOS</span><strong id="total-votes">0</strong><small>Votos confirmados</small></div><div class="ranking-stat"><span class="eyebrow">CATEGORIAS</span><strong>09</strong><small>Em competição</small></div><div class="ranking-stat"><span class="eyebrow">ESTADO</span><strong class="ranking-status">AO VIVO</strong><small>Actualização automática a cada 10 segundos</small></div></section>
+    <section class="awards-countdowns" aria-labelledby="awards-countdown-title">
+      <div class="awards-countdown-heading"><div class="eyebrow">A CONTAGEM DECRESCENTE COMEÇOU</div><h2 id="awards-countdown-title">A caminho da <span class="gradient-text">grande noite.</span></h2><p>Última oportunidade para apoiar os teus nomeados. A votação encerra no dia da gala.</p></div>
+      <div class="awards-countdown-grid">
+        <article class="awards-countdown-card voting-countdown-card"><span class="countdown-label">ENCERRAMENTO DA VOTAÇÃO</span><h3>O teu voto conta até 27 de Dezembro</h3><div class="awards-timer" id="voting-end-countdown"><div><strong data-unit="days">00</strong><span>DIAS</span></div><i>:</i><div><strong data-unit="hours">00</strong><span>HORAS</span></div><i>:</i><div><strong data-unit="minutes">00</strong><span>MINUTOS</span></div><i>:</i><div><strong data-unit="seconds">00</strong><span>SEGUNDOS</span></div></div><p class="countdown-foot" id="voting-end-status">VOTAÇÃO ABERTA ATÉ 27 DE DEZEMBRO DE 2026 · 23:59 (LONDRES)</p></article>
+        <article class="awards-countdown-card gala-countdown-card"><span class="countdown-label">A NOITE DOS VENCEDORES</span><h3>MS TikTok PALOP Awards Gala</h3><div class="gala-date"><strong>27</strong><span>DEZEMBRO<br>2026</span></div><div class="awards-timer gala-timer" id="gala-day-countdown"><div><strong data-unit="days">00</strong><span>DIAS</span></div><i>:</i><div><strong data-unit="hours">00</strong><span>HORAS</span></div><i>:</i><div><strong data-unit="minutes">00</strong><span>MINUTOS</span></div><i>:</i><div><strong data-unit="seconds">00</strong><span>SEGUNDOS</span></div></div><p class="countdown-foot" id="gala-countdown-status">CONTAGEM ATÉ AO DIA DA GALA · HORÁRIO A ANUNCIAR</p></article>
+      </div>
+    </section>
     <section class="overall-top-section" aria-labelledby="overall-top-title">
       <div class="section-heading"><div><div class="eyebrow">OS MAIS VOTADOS · TODAS AS CATEGORIAS</div><h2 id="overall-top-title">TOP 3 <span class="gradient-text">GERAL.</span></h2></div><p>Os três nomeados com mais votos confirmados, independentemente da categoria.</p></div>
       <div class="overall-top-grid" id="overall-top-grid" aria-live="polite"><p class="overall-top-empty">A carregar ranking geral...</p></div>
@@ -148,6 +155,39 @@
       }
     });
     const pad = n => String(n).padStart(2, '0');
+    // London time: GMT (UTC+0) on 27 December 2026.
+    const votingEndsAt = new Date('2026-12-27T23:59:59+00:00').getTime();
+    const galaDayStartsAt = new Date('2026-12-27T00:00:00+00:00').getTime();
+    const updateTimer = (target, id) => {
+      const root = document.getElementById(id);
+      const remaining = Math.max(0, target - Date.now());
+      if (root) {
+        const units = {
+          days: Math.floor(remaining / 86400000),
+          hours: Math.floor((remaining % 86400000) / 3600000),
+          minutes: Math.floor((remaining % 3600000) / 60000),
+          seconds: Math.floor((remaining % 60000) / 1000)
+        };
+        Object.entries(units).forEach(([unit, value]) => {
+          const node = root.querySelector('[data-unit="' + unit + '"]');
+          if (node) node.textContent = pad(value);
+        });
+      }
+      return remaining;
+    };
+    function updateAwardsCountdowns() {
+      const votingRemaining = updateTimer(votingEndsAt, 'voting-end-countdown');
+      updateTimer(galaDayStartsAt, 'gala-day-countdown');
+      if (votingRemaining <= 0) {
+        const status = document.getElementById('voting-end-status');
+        if (status) status.textContent = 'VOTAÇÃO ENCERRADA · OBRIGADO POR FAZERES PARTE DESTA EDIÇÃO';
+        document.body.classList.add('awards-voting-closed');
+      }
+      const galaStatus = document.getElementById('gala-countdown-status');
+      if (galaStatus && Date.now() >= galaDayStartsAt) galaStatus.textContent = 'É HOJE · 27 DE DEZEMBRO DE 2026';
+    }
+    updateAwardsCountdowns();
+    window.setInterval(updateAwardsCountdowns, 1000);
     function updateLaunchCountdown() {
       const remaining = launchAt - Date.now();
       if (remaining <= 0) {
