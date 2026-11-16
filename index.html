@@ -108,6 +108,17 @@
          <span class="black-friday-modal-foot">50% DE DESCONTO · ESCOLHE ESTA OFERTA</span>
        </button>
        <button class="bulk-offer" id="bulk-offer" type="button" aria-pressed="false"><span class="bulk-offer-top"><b>PACK ESPECIAL · 10 VOTOS</b><span class="bulk-badge">-20%</span></span><span class="bulk-offer-price"><strong>€8</strong><span>ou 8.000 Kz</span></span><span class="bulk-offer-foot" id="bulk-savings">Poupa 20% ao escolher 10 votos</span><span class="bulk-offer-action">APLICAR PACOTE ↗</span></button>
+      <div class="bulk-pack-picker" id="bulk-pack-picker" hidden>
+        <label for="bulk-pack-count">Número de pacotes (máximo 5)</label>
+        <select id="bulk-pack-count">
+          <option value="1">1 pacote · 10 votos</option>
+          <option value="2">2 pacotes · 20 votos</option>
+          <option value="3">3 pacotes · 30 votos</option>
+          <option value="4">4 pacotes · 40 votos</option>
+          <option value="5">5 pacotes · 50 votos</option>
+        </select>
+        <small>Desconto de 20% aplicado a cada pacote de 10 votos.</small>
+      </div>
       <label for="payment-method">Método de pagamento</label><select id="payment-method"><option value="paypal">PayPal — €1 por voto</option><option value="multicaixa_express">Multicaixa Express — 1.000 Kz por voto</option><option value="revolut">Revolut — €1 por voto</option><option value="mbway">MB WAY — €1 por voto</option></select>
       <div class="modal-total"><span>Total a pagar</span><strong id="vote-amount">€1</strong></div>
       <div class="payment-action-panel"><div class="modal-payment-details" id="payment-recipient">PayPal: <b>Marcelolemossmith@gmail.com</b></div><div class="express-instructions" id="express-instructions" hidden>Abre a aplicação Multicaixa Express e envia o valor indicado para o número apresentado. Titular: Marcelo Smith.</div><a class="payment-launch" id="payment-launch" href="https://www.paypal.com/" target="_blank" rel="noopener">ABRIR PAYPAL PARA PAGAR ↗</a><p class="payment-step-hint" id="payment-step-hint">Conclui o pagamento na tua conta PayPal. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.</p></div>
