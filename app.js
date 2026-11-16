@@ -4,10 +4,10 @@
  const $=id=>document.getElementById(id);
  const tabs=$('category-tabs'),grid=$('nominee-grid'),title=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state'),visible=$('visible-count');
  const modal=$('vote-modal'),qty=$('vote-quantity'),method=$('payment-method'),amount=$('vote-amount'),ref=$('vote-reference'),recipient=$('payment-recipient'),copy=$('copy-reference');
- const bulkOffer=$('bulk-offer'),bulkSave=$('bulk-savings'),blackFridayOffer=$('black-friday-offer');
+ const bulkOffer=$('bulk-offer'),bulkSave=$('bulk-savings'),blackFridayOffer=$('black-friday-offer'),bulkPicker=$('bulk-pack-picker'),bulkPackCount=$('bulk-pack-count');
  const BLACK_FRIDAY_END=new Date('2026-11-16T20:48:00+00:00').getTime();
  function blackFridayActive(){return Date.now()<BLACK_FRIDAY_END;}
- function priceFor(quantity,euros){if(quantity===100&&blackFridayActive())return euros?50:50000;const regular=euros?quantity:quantity*1000;return quantity===10?(euros?8:8000):regular;}
+ function priceFor(quantity,euros){if(quantity===100&&blackFridayActive())return euros?50:50000;const regular=euros?quantity:quantity*1000;return quantity>=10&&quantity<=50&&quantity%10===0?quantity*(euros?0.8:800):regular;}
  function updateBlackFridayTimer(){
   const banner=$('black-friday-promo'),timer=$('black-friday-timer'),offer=$('black-friday-offer');
   const remaining=BLACK_FRIDAY_END-Date.now(),active=remaining>0;
@@ -77,11 +77,14 @@
   const mbway=selectedMethod==='mbway';
   const euroPayment=paypal||revolut||mbway;
   const reference='Voto X '+(selected.category||'Categoria')+' X '+(selected.nominee||'Nome')+' X '+n+' votos';
-  const promoDiscounted=n===100&&blackFridayActive(),total=priceFor(n,euroPayment),discounted=n===10;
-  amount.innerHTML=promoDiscounted?'<span class="price-was">'+(euroPayment?'€100':'100.000 Kz')+'</span> '+(euroPayment?'€50':'50.000 Kz'):discounted?'<span class="price-was">'+(euroPayment?'€10':'10.000 Kz')+'</span> '+(euroPayment?'€8':'8.000 Kz'):(euroPayment?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
+  const promoDiscounted=n===100&&blackFridayActive(),total=priceFor(n,euroPayment),discounted=n>=10&&n<=50&&n%10===0,regularTotal=euroPayment?n:n*1000;
+  amount.innerHTML=promoDiscounted?'<span class="price-was">'+(euroPayment?'€100':'100.000 Kz')+'</span> '+(euroPayment?'€50':'50.000 Kz'):discounted?'<span class="price-was">'+(euroPayment?'€'+regularTotal.toLocaleString('pt-PT'):regularTotal.toLocaleString('pt-PT')+' Kz')+'</span> '+(euroPayment?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz'):(euroPayment?'€'+total.toLocaleString('pt-PT'):total.toLocaleString('pt-PT')+' Kz');
   if(blackFridayOffer){blackFridayOffer.classList.toggle('is-selected',promoDiscounted);blackFridayOffer.setAttribute('aria-pressed',String(promoDiscounted));}
   if(bulkOffer){bulkOffer.classList.toggle('is-selected',discounted);bulkOffer.setAttribute('aria-pressed',String(discounted));}
-  if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(euroPayment?'€2':'2.000 Kz')+' nesta compra':'Poupa 20% ao escolher 10 votos';
+  if(bulkSave)bulkSave.textContent=discounted?'Poupa '+(euroPayment?'€'+(regularTotal-total).toLocaleString('pt-PT'):(regularTotal-total).toLocaleString('pt-PT')+' Kz')+' nesta compra':'Poupa 20% ao escolher pacotes de 10 votos';
+  if(bulkPicker)bulkPicker.hidden=!discounted;
+  if(bulkPackCount&&discounted)bulkPackCount.value=String(n/10);
+  if(bulkOffer){const packLabel=bulkOffer.querySelector('.bulk-offer-top b');if(packLabel)packLabel.textContent=discounted?'PACK ESPECIAL · '+(n/10)+' × 10 VOTOS':'PACK ESPECIAL · 10 VOTOS';const packPrice=bulkOffer.querySelector('.bulk-offer-price strong');if(packPrice)packPrice.textContent='€'+(n>=10&&n<=50&&n%10===0?priceFor(n,true):8).toLocaleString('pt-PT');const packCurrency=bulkOffer.querySelector('.bulk-offer-price span');if(packCurrency)packCurrency.textContent=(n>=10&&n<=50&&n%10===0?priceFor(n,false):8000).toLocaleString('pt-PT')+' Kz';}
   ref.textContent=reference;
   recipient.innerHTML=mbway?'MB WAY: <b>926 372 367</b>':revolut?'Revolut: <b>revolut.me/fidaliag</b>':paypal?'PayPal: <b>Marcelolemossmith@gmail.com</b>':'Multicaixa Express: <b>941 232 417</b><br>Titular: <b>Marcelo Smith</b>';
   const express=$('express-instructions'),launch=$('payment-launch'),hint=$('payment-step-hint');
@@ -250,7 +253,8 @@
    setTimeout(()=>{closeVote();button.disabled=false;button.textContent='ENVIAR VOTO E COMPROVATIVO'},3500);
   }catch(error){console.error('Vote submission failed',error);status.textContent='Não foi possível registar. '+(error.message||'Tenta novamente ou contacta a organização.');button.disabled=false}
  }
- search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{qty.value=10;updatePayment()});if(blackFridayOffer)blackFridayOffer.addEventListener('click',()=>{if(!blackFridayActive())return;qty.value=100;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
+ search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{if(bulkPicker&&bulkPicker.hidden){qty.value=10;}else if(Number(qty.value)<10||Number(qty.value)>50||Number(qty.value)%10!==0){qty.value=10;}updatePayment();if(bulkPicker)bulkPicker.hidden=false;});
+ if(bulkPackCount)bulkPackCount.addEventListener('change',()=>{qty.value=Number(bulkPackCount.value)*10;updatePayment();});if(blackFridayOffer)blackFridayOffer.addEventListener('click',()=>{if(!blackFridayActive())return;qty.value=100;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
  initAccount().catch(error=>console.error('Account initialisation failed:',error));
  updateBlackFridayTimer();setInterval(updateBlackFridayTimer,1000);
