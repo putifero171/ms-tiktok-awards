@@ -220,3 +220,10 @@
 /* Celebration effects: decorative canvas never blocks navigation or voting. */
 .awards-fx-canvas{position:fixed;inset:0;z-index:6;pointer-events:none;display:block;overflow:hidden}
 @media(prefers-reduced-motion:reduce){.awards-fx-canvas{display:none}}
+
+/* Multi-pack selector for the discounted 10-vote offer */
+.bulk-pack-picker{margin:-8px 0 20px;padding:14px 16px;background:#11131a;border:1px solid #e9bd7240}
+.bulk-pack-picker[hidden]{display:none}
+.bulk-pack-picker label{display:block;margin:0 0 8px;color:var(--gold);font-size:10px;letter-spacing:.1em}
+.bulk-pack-picker select{width:100%;padding:12px;background:#08090d;border:1px solid var(--line);color:var(--text);font:12px var(--font)}
+.bulk-pack-picker small{display:block;margin-top:8px;color:var(--muted);font-size:10px}
