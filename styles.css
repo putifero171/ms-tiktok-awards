@@ -227,3 +227,13 @@
 .bulk-pack-picker label{display:block;margin:0 0 8px;color:var(--gold);font-size:10px;letter-spacing:.1em}
 .bulk-pack-picker select{width:100%;padding:12px;background:#08090d;border:1px solid var(--line);color:var(--text);font:12px var(--font)}
 .bulk-pack-picker small{display:block;margin-top:8px;color:var(--muted);font-size:10px}
+
+.account-divider{display:flex;align-items:center;gap:12px;margin:10px 0;color:var(--muted);font-size:9px;letter-spacing:.14em}
+.account-divider:before,.account-divider:after{content:"";height:1px;flex:1;background:var(--line)}
+.account-google{width:100%;justify-content:center;background:#f5f5f5;color:#161616;border:1px solid #ddd}
+.account-google:hover{background:#fff;transform:translateY(-1px)}
+.account-forgot{justify-self:start;background:transparent;border:0;padding:7px 0;color:var(--muted);font:11px var(--font);text-decoration:underline;cursor:pointer}
+.account-recovery{max-width:520px;margin:0 auto;display:grid;gap:14px}
+.account-recovery h3{font:600 28px var(--display);margin:0}
+.account-recovery p{color:var(--muted);font-size:13px;line-height:1.7}
+.account-recovery input{width:100%;padding:15px 16px;border:1px solid var(--line);border-radius:7px;background:#090a10;color:white;font:14px var(--font)}
