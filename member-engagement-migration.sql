@@ -99,9 +99,9 @@ BEGIN
   -- A 30-vote milestone also creates an in-site alert for each loyalty voucher.
   IF approved_total >= 30 THEN
     INSERT INTO public.awards_notifications(user_id, notification_key, notification_type, title, message)
-    SELECT member_id, 'reward:' || milestone::text, 'reward',
-           'Ganhaste 3 votos grátis!', 'Atingiste ' || milestone::text || ' votos aprovados. Entra na tua conta e resgata o teu voucher.'
-    FROM generate_series(30, (approved_total / 30)::integer * 30, 30) AS milestone
+    SELECT member_id, 'reward:' || milestone_votes::text, 'reward',
+           'Ganhaste 3 votos grátis!', 'Atingiste ' || milestone_votes::text || ' votos aprovados. Entra na tua conta e resgata o teu voucher.'
+    FROM generate_series(30, (approved_total / 30)::integer * 30, 30) AS milestones(milestone_votes)
     ON CONFLICT (user_id, notification_key) DO NOTHING;
   END IF;
 
@@ -152,9 +152,9 @@ BEGIN
 
     IF member.approved_total >= 30 THEN
       INSERT INTO public.awards_notifications(user_id, notification_key, notification_type, title, message)
-      SELECT member.user_id, 'reward:' || milestone::text, 'reward',
-             'Ganhaste 3 votos grátis!', 'Atingiste ' || milestone::text || ' votos aprovados. Entra na tua conta e resgata o teu voucher.'
-      FROM generate_series(30, (member.approved_total / 30)::integer * 30, 30) AS milestone
+      SELECT member.user_id, 'reward:' || milestone_votes::text, 'reward',
+             'Ganhaste 3 votos grátis!', 'Atingiste ' || milestone_votes::text || ' votos aprovados. Entra na tua conta e resgata o teu voucher.'
+      FROM generate_series(30, (member.approved_total / 30)::integer * 30, 30) AS milestones(milestone_votes)
       ON CONFLICT (user_id, notification_key) DO NOTHING;
     END IF;
   END LOOP;
