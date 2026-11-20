@@ -260,3 +260,30 @@
 .loyalty-inline-cta{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:13px 18px;background:var(--gold);color:#111;font-size:9px;font-weight:900;letter-spacing:.08em;text-align:center;line-height:1.5}
 .loyalty-inline-banner>small{grid-column:2/-1;color:var(--muted);font-size:9px;line-height:1.6}
 @media(max-width:760px){.loyalty-inline-banner{margin:20px 6vw 28px;padding:20px;grid-template-columns:42px minmax(0,1fr);gap:12px}.loyalty-inline-icon{width:42px;height:42px;font-size:21px}.loyalty-inline-copy h2{font-size:22px}.loyalty-inline-copy p{font-size:11px}.loyalty-inline-cta{grid-column:1/-1;width:100%;min-height:50px}.loyalty-inline-banner>small{grid-column:1/-1;font-size:9px}}
+
+ 
+/* Member notifications and achievement badges */
+.account-engagement{margin:26px 0 34px;padding:22px;border:1px solid #ffffff20;border-radius:12px;background:linear-gradient(145deg,#151720,#0d0e14)}
+.account-engagement-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+.account-notifications,.account-badges{min-width:0}
+.account-engagement-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+.account-engagement-heading h4{font:600 19px var(--display);margin:6px 0 0}
+.account-small-action{border:1px solid #e9bd7255;background:transparent;color:var(--gold);padding:9px 11px;font-size:8px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.account-small-action:disabled{opacity:.45;cursor:default}
+.account-notifications-list{display:grid;max-height:390px;overflow:auto}
+.account-notification{display:grid;grid-template-columns:8px 1fr;gap:11px;padding:13px 4px;border-bottom:1px solid #ffffff12}
+.notification-dot{width:7px;height:7px;margin-top:5px;border-radius:50%;background:transparent}
+.account-notification.is-unread .notification-dot{background:var(--gold);box-shadow:0 0 10px #e9bd7280}
+.account-notification strong{font-size:12px}
+.account-notification p{margin:4px 0;color:var(--muted);font-size:11px;line-height:1.6}
+.account-notification small{font-size:9px;color:#777987}
+.account-notification.is-read{opacity:.62}
+.account-badges-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.member-badge{display:grid;justify-items:center;gap:7px;min-width:0;padding:13px 9px;text-align:center;border:1px solid #e9bd7235;border-radius:9px;background:#e9bd7208}
+.member-badge.is-locked{filter:grayscale(1);opacity:.42;border-color:#ffffff18;background:#ffffff05}
+.member-badge-icon{width:37px;height:37px;display:grid;place-items:center;border-radius:50%;background:#e9bd7215;color:var(--gold);font-size:19px}
+.member-badge strong{font:600 11px var(--display)}
+.member-badge small{font-size:9px;line-height:1.5;color:var(--muted)}
+.member-badge em{font-style:normal;font-size:7px;letter-spacing:.1em;color:var(--gold);font-weight:800}
+.badge-count{font-size:10px;color:var(--gold);font-weight:800}
+@media(max-width:760px){.account-engagement{padding:16px}.account-engagement-grid{grid-template-columns:1fr;gap:24px}.account-engagement-heading h4{font-size:17px}.account-badges-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.account-small-action{font-size:7px;padding:8px}}
