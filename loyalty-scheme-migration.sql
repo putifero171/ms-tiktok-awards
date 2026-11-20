@@ -159,6 +159,10 @@ BEGIN
     RAISE EXCEPTION 'Authentication required';
   END IF;
 
+  IF statement_timestamp() >= timestamptz '2026-12-27 23:59:59+00' THEN
+    RAISE EXCEPTION 'Voting is closed. Loyalty vouchers can no longer be redeemed.';
+  END IF;
+
   SELECT * INTO reward_row
   FROM public.awards_loyalty_rewards
   WHERE id = p_reward_id AND user_id = member_id
