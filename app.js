@@ -124,7 +124,16 @@
   const result=following
    ?await sb.from('awards_followed_nominees').delete().eq('user_id',currentUser.id).eq('nominee_id',nomineeId)
    :await sb.from('awards_followed_nominees').insert({user_id:currentUser.id,nominee_id:nomineeId});
-  if(result.error){console.error('Follow nominee:',result.error);button.disabled=false;button.textContent='TENTA NOVAMENTE';return}
+  if(result.error){
+   console.error('Follow nominee:',result.error);
+   button.disabled=false;button.textContent='ERRO · VER DETALHES';
+   const detail=result.error.message||result.error.details||result.error.hint||'Erro desconhecido';
+   button.title=detail;
+   const status=$('account-auth-status');
+   if(status)status.textContent='Não foi possível seguir este nomeado: '+detail;
+   window.alert('Não foi possível seguir este nomeado.\n\nDetalhe técnico: '+detail);
+   return
+  }
   if(following)followedNomineeIds.delete(nomineeId);else followedNomineeIds.add(nomineeId);
   render();renderFollowedNominees();
  }
