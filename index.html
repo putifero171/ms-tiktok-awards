@@ -280,5 +280,19 @@
     if (!gate.classList.contains('launch-gate-ended')) timer = window.setInterval(updateLaunchCountdown, 1000);
   })();
   </script>
+
+  <div class="loyalty-promo-backdrop" id="loyalty-promo" hidden>
+    <section class="loyalty-promo-modal" role="dialog" aria-modal="true" aria-labelledby="loyalty-promo-title">
+      <button class="loyalty-promo-close" id="loyalty-promo-close" type="button" aria-label="Fechar">×</button>
+      <div class="loyalty-promo-icon" aria-hidden="true">✦</div>
+      <span class="eyebrow">NOVIDADE · VOTE &amp; EARN</span>
+      <h2 id="loyalty-promo-title">Os teus votos <span class="gradient-text">valem prémios.</span></h2>
+      <p>Por cada <strong>30 votos pagos e aprovados</strong>, ganhas automaticamente <strong>3 VOTOS GRÁTIS</strong> para apoiares qualquer nomeado.</p>
+      <div class="loyalty-promo-example"><strong>30 votos</strong><span>→</span><b>3 VOTOS GRÁTIS</b></div>
+      <button class="button-primary loyalty-promo-login" id="loyalty-promo-login" type="button">ENTRAR COM GOOGLE E VER AS MINHAS RECOMPENSAS ↗</button>
+      <button class="loyalty-promo-later" id="loyalty-promo-later" type="button">Agora não</button>
+      <small>É necessário iniciar sessão com Google. Só contam votos pagos e aprovados associados à tua conta.</small>
+    </section>
+  </div>
   <script src="/awards-fx.js" defer></script>
 </body></html>
