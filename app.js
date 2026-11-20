@@ -254,7 +254,9 @@
    if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
   });
   $('account-loyalty-redeem')?.addEventListener('click',redeemLoyaltyReward);
-  $('notifications-mark-read')?.addEventListener('click',markAccountNotificationsRead);\n  $('account-followed-list')?.addEventListener('click',e=>{const id=e.target.closest('[data-unfollow]')?.dataset.unfollow;if(id)toggleFollowNominee(id,e.target.closest('[data-unfollow]'))});\n  $('follow-filter')?.addEventListener('click',()=>{followOnly=!followOnly;$('follow-filter').classList.toggle('is-active',followOnly);$('follow-filter').textContent=followOnly?'A MOSTRAR: A SEGUIR':'FILTRAR: A SEGUIR';render()});
+  $('notifications-mark-read')?.addEventListener('click',markAccountNotificationsRead);
+  $('account-followed-list')?.addEventListener('click',e=>{const id=e.target.closest('[data-unfollow]')?.dataset.unfollow;if(id)toggleFollowNominee(id,e.target.closest('[data-unfollow]'))});
+  $('follow-filter')?.addEventListener('click',()=>{followOnly=!followOnly;$('follow-filter').classList.toggle('is-active',followOnly);$('follow-filter').textContent=followOnly?'A MOSTRAR: A SEGUIR':'FILTRAR: A SEGUIR';render()});
   $('account-loyalty-reward')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-loyalty-nominee')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-logout')?.addEventListener('click',async()=>{
