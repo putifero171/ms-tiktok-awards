@@ -119,8 +119,9 @@
   const auth=$('account-auth'),dashboard=$('account-dashboard');if(!auth||!dashboard)return;
   auth.hidden=!!currentUser;dashboard.hidden=!currentUser;
   if(!currentUser)return;
-  $('account-user-email').textContent=currentUser.user_metadata?.username||'';
-  $('account-welcome').textContent='Bem-vindo, '+(currentUser.user_metadata?.username||'');
+  const displayName=currentUser.user_metadata?.username||currentUser.user_metadata?.full_name||currentUser.email||'Membro';
+  $('account-user-email').textContent=currentUser.email||'';
+  $('account-welcome').textContent='Bem-vindo, '+displayName;
   await loadAccountHistory();
  }
  async function initAccount(){
@@ -130,6 +131,14 @@
   const password=()=> $('account-password').value;
   const validUsername=value=>/^[a-zA-Z0-9._-]{3,24}$/.test(value);
   const emailWrap=$('account-email-wrap');
+  $('account-google')?.addEventListener('click',async()=>{
+   status.textContent='A ligar ao Google...';
+   const {error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.origin+'/#minha-conta',queryParams:{prompt:'select_account'}}
+   });
+   if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
+  });
   $('account-login')?.addEventListener('click',async()=>{
    if(emailWrap)emailWrap.hidden=true;
    const name=username();if(!validUsername(name)||password().length<8){status.textContent='Confirma o username (3–24 caracteres) e a palavra-passe (mínimo 8).';return}
