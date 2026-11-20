@@ -103,15 +103,51 @@
   if(hint)hint.textContent=mbway?'Abre a aplicação MB WAY, envia o valor exacto para o número 926 372 367 e regressa para indicar o nome do pagador e anexar o comprovativo. Usa a descrição do voto apresentada no site.':revolut?'Abre o Revolut pelo botão acima, envia o valor exacto e regressa para indicar o teu nome e anexar a captura do pagamento. Usa a descrição do voto apresentada no site.':paypal?'Conclui o pagamento na tua conta PayPal para Marcelolemossmith@gmail.com. Depois regressa aqui, indica o ID da transacção e anexa o comprovativo.':'Conclui a transferência na aplicação Multicaixa Express para o número acima. Depois regressa aqui, indica a referência da transacção e anexa o comprovativo.';
  }
 
+
+ const MEMBER_BADGES=[
+  {code:'first_vote',icon:'✦',name:'Primeiro Apoio',description:'Aprovado o teu primeiro voto.'},
+  {code:'supporter_10',icon:'♡',name:'Fã de Carteirinha',description:'Atingiste 10 votos aprovados.'},
+  {code:'fan_30',icon:'🏆',name:'Super Fã',description:'Atingiste 30 votos aprovados.'},
+  {code:'champion_50',icon:'⭐',name:'Campeão',description:'Atingiste 50 votos aprovados.'},
+  {code:'legend_100',icon:'👑',name:'Lenda PALOP',description:'Atingiste 100 votos aprovados.'},
+  {code:'category_explorer',icon:'🌍',name:'Explorador PALOP',description:'Apoiastes nomeados em 3 categorias diferentes.'}
+ ];
+ function renderAccountNotifications(result){
+  const root=$('account-notifications-list'),button=$('notifications-mark-read');if(!root)return;
+  if(result.error){root.innerHTML='<p class="account-empty">Não foi possível carregar as notificações. Executa a migração SQL indicada pela organização.</p>';console.warn('Notifications:',result.error);if(button)button.disabled=true;return}
+  const items=result.data||[],unread=items.filter(x=>!x.is_read).length;
+  if(button){button.disabled=!unread;button.textContent=unread?'MARCAR TUDO COMO LIDO ('+unread+')':'TUDO LIDO';}
+  root.innerHTML=items.length?items.map(item=>'<article class="account-notification '+(item.is_read?'is-read':'is-unread')+'"><span class="notification-dot"></span><div><strong>'+escapeAccountText(item.title)+'</strong><p>'+escapeAccountText(item.message)+'</p><small>'+new Date(item.created_at).toLocaleString('pt-PT',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+'</small></div></article>').join(''):'<p class="account-empty">Ainda não tens notificações. As tuas conquistas e recompensas aparecerão aqui.</p>';
+ }
+ function renderAccountBadges(result){
+  const root=$('account-badges-grid');if(!root)return;
+  if(result.error){root.innerHTML='<p class="account-empty">Não foi possível carregar os badges. Executa a migração SQL indicada pela organização.</p>';console.warn('Badges:',result.error);return}
+  const earned=new Map((result.data||[]).map(item=>[item.badge_code,item.earned_at]));
+  const count=$('account-badges-count');if(count)count.textContent=earned.size+' / '+MEMBER_BADGES.length;
+  root.innerHTML=MEMBER_BADGES.map(b=>'<article class="member-badge '+(earned.has(b.code)?'is-earned':'is-locked')+'"><span class="member-badge-icon">'+b.icon+'</span><strong>'+b.name+'</strong><small>'+b.description+'</small><em>'+(earned.has(b.code)?'CONQUISTADO':'POR CONQUISTAR')+'</em></article>').join('');
+ }
+ async function markAccountNotificationsRead(){
+  if(!currentUser)return;
+  const button=$('notifications-mark-read');if(button)button.disabled=true;
+  const {error}=await sb.from('awards_notifications').update({is_read:true}).eq('user_id',currentUser.id).eq('is_read',false);
+  if(error){console.error('Mark notifications read:',error);if(button)button.disabled=false;return}
+  const {data,error:reloadError}=await sb.from('awards_notifications').select('id,title,message,notification_type,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
+  if(!reloadError)renderAccountNotifications({data,error:null});
+ }
  async function loadAccountHistory(){
   const history=$('account-history');if(!currentUser||!history)return;
   history.innerHTML='<p class="account-empty">A carregar os votos aprovados...</p>';
-  const [historyResult,loyaltyResult,rewardsResult,redemptionResult]=await Promise.all([
+  const [historyResult,loyaltyResult,rewardsResult,redemptionResult,notificationsResult,badgesResult]=await Promise.all([
     sb.from('vote_submissions').select('id,quantity,created_at,payment_method,amount,currency,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).eq('status','approved').order('created_at',{ascending:false}).limit(100),
     sb.rpc('get_my_loyalty_status'),
     sb.from('awards_loyalty_rewards').select('id,milestone_votes,created_at,status').eq('user_id',currentUser.id).eq('status','available').order('milestone_votes',{ascending:true}),
-    sb.from('awards_loyalty_redemptions').select('id,quantity,created_at,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50)
+    sb.from('awards_loyalty_redemptions').select('id,quantity,created_at,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50),
+    sb.from('awards_notifications').select('id,title,message,notification_type,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30),
+    sb.from('awards_member_badges').select('badge_code,earned_at').eq('user_id',currentUser.id).order('earned_at',{ascending:true})
   ]);
+
+  renderAccountNotifications(notificationsResult);
+  renderAccountBadges(badgesResult);
   const {data,error}=historyResult;
   if(error){history.innerHTML='<p class="account-empty">Não foi possível carregar o histórico. Tenta novamente mais tarde.</p>';console.error('Account history:',error);return}
   const rows=data||[],cats=new Set(rows.map(row=>row.category?.title).filter(Boolean));
@@ -191,6 +227,7 @@
    if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
   });
   $('account-loyalty-redeem')?.addEventListener('click',redeemLoyaltyReward);
+  $('notifications-mark-read')?.addEventListener('click',markAccountNotificationsRead);
   $('account-loyalty-reward')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-loyalty-nominee')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-logout')?.addEventListener('click',async()=>{
