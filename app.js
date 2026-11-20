@@ -106,10 +106,11 @@
  async function loadAccountHistory(){
   const history=$('account-history');if(!currentUser||!history)return;
   history.innerHTML='<p class="account-empty">A carregar os votos aprovados...</p>';
-  const [historyResult,loyaltyResult,rewardsResult]=await Promise.all([
+  const [historyResult,loyaltyResult,rewardsResult,redemptionResult]=await Promise.all([
     sb.from('vote_submissions').select('id,quantity,created_at,payment_method,amount,currency,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).eq('status','approved').order('created_at',{ascending:false}).limit(100),
     sb.rpc('get_my_loyalty_status'),
-    sb.from('awards_loyalty_rewards').select('id,milestone_votes,created_at,status').eq('user_id',currentUser.id).eq('status','available').order('milestone_votes',{ascending:true})
+    sb.from('awards_loyalty_rewards').select('id,milestone_votes,created_at,status').eq('user_id',currentUser.id).eq('status','available').order('milestone_votes',{ascending:true}),
+    sb.from('awards_loyalty_redemptions').select('id,quantity,created_at,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50)
   ]);
   const {data,error}=historyResult;
   if(error){history.innerHTML='<p class="account-empty">Não foi possível carregar o histórico. Tenta novamente mais tarde.</p>';console.error('Account history:',error);return}
@@ -126,6 +127,15 @@
     $('loyalty-redeemed-count').textContent=String(loyalty.redeemed_rewards||0);
   }
   if(rewardsResult.error){console.error('Loyalty rewards:',rewardsResult.error)}
+  const rewardHistory=$('account-loyalty-history');
+  if(rewardHistory){
+    if(redemptionResult.error){console.error('Loyalty redemption history:',redemptionResult.error);rewardHistory.innerHTML='<p class="account-empty">Não foi possível carregar o histórico de recompensas.</p>'}
+    else if(!(redemptionResult.data||[]).length){rewardHistory.innerHTML='<p class="account-empty">Ainda não utilizaste vouchers.</p>'}
+    else rewardHistory.innerHTML=redemptionResult.data.map(item=>{
+      const date=new Date(item.created_at).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'});
+      return '<article class="loyalty-history-row"><div><strong>'+escapeAccountText(item.nominee?.name||'Nomeado')+'</strong><span>'+escapeAccountText(item.category?.title||'Categoria')+' · '+date+'</span></div><b>+'+Number(item.quantity)+' votos grátis</b><em>REDEEMED</em></article>';
+    }).join('');
+  }
   const rewards=rewardsResult.data||[],rewardSelect=$('account-loyalty-reward'),redeemButton=$('account-loyalty-redeem');
   rewardSelect.innerHTML=rewards.length?rewards.map(r=>'<option value="'+r.id+'">Voucher de 3 votos · marco '+Number(r.milestone_votes)+' votos</option>').join(''):'<option value="">Sem vouchers disponíveis</option>';
   rewardSelect.disabled=!rewards.length;
