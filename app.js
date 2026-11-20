@@ -1,6 +1,6 @@
 (() => {
  const fallback=window.AWARD_CATEGORIES||[];
- let categories=[],categorySponsors={},active=0,currentUser=null,selected={category:"",nominee:"",categoryId:null,nomineeId:null},voteCounts={},sb=null;
+ let categories=[],categorySponsors={},active=0,currentUser=null,followedNomineeIds=new Set(),followOnly=false,selected={category:"",nominee:"",categoryId:null,nomineeId:null},voteCounts={},sb=null;
  const $=id=>document.getElementById(id);
  const tabs=$('category-tabs'),grid=$('nominee-grid'),title=$('active-title'),count=$('nominee-count'),search=$('search'),empty=$('empty-state'),visible=$('visible-count');
  const modal=$('vote-modal'),qty=$('vote-quantity'),method=$('payment-method'),amount=$('vote-amount'),ref=$('vote-reference'),recipient=$('payment-recipient'),copy=$('copy-reference');
@@ -112,6 +112,33 @@
   {code:'legend_100',icon:'👑',name:'Lenda PALOP',description:'Atingiste 100 votos aprovados.'},
   {code:'category_explorer',icon:'🌍',name:'Explorador PALOP',description:'Apoiastes nomeados em 3 categorias diferentes.'}
  ];
+ async function loadFollowedNominees(){
+  if(!currentUser){followedNomineeIds=new Set();return}
+  const {data,error}=await sb.from('awards_followed_nominees').select('nominee_id').eq('user_id',currentUser.id);
+  if(error){console.warn('Followed nominees:',error.message);return}
+  followedNomineeIds=new Set((data||[]).map(row=>row.nominee_id));
+ }
+ async function toggleFollowNominee(nomineeId,button){
+  if(!currentUser){const status=$('account-auth-status');if(status)status.textContent='Inicia sessão com Google para seguires os teus nomeados.';const account=$('minha-conta');if(account)account.scrollIntoView({behavior:'smooth'});return}
+  const following=followedNomineeIds.has(nomineeId);button.disabled=true;
+  const result=following
+   ?await sb.from('awards_followed_nominees').delete().eq('user_id',currentUser.id).eq('nominee_id',nomineeId)
+   :await sb.from('awards_followed_nominees').insert({user_id:currentUser.id,nominee_id:nomineeId});
+  if(result.error){console.error('Follow nominee:',result.error);button.disabled=false;button.textContent='TENTA NOVAMENTE';return}
+  if(following)followedNomineeIds.delete(nomineeId);else followedNomineeIds.add(nomineeId);
+  render();renderFollowedNominees();
+ }
+ function renderFollowedNominees(){
+  const root=$('account-followed-list'),count=$('account-followed-count');if(!root)return;
+  if(count)count.textContent=String(followedNomineeIds.size);
+  if(!followedNomineeIds.size){root.innerHTML='<p class="account-empty">Ainda não segues nenhum nomeado. Explora as categorias e toca em SEGUIR num candidato.</p>';return}
+  const entries=[];
+  categories.forEach(category=>{
+   const ranked=category.nominees.map(person=>({person,votes:Number(voteCounts[person.id])||0})).sort((a,b)=>b.votes-a.votes||a.person.name.localeCompare(b.person.name,'pt'));
+   ranked.forEach((entry,index)=>{if(followedNomineeIds.has(entry.person.id))entries.push({category,...entry,position:index+1})});
+  });
+  root.innerHTML=entries.map(entry=>'<article class="followed-nominee-row"><div class="followed-nominee-rank">#'+String(entry.position).padStart(2,'0')+'</div><div class="followed-nominee-info"><strong>'+escapeAccountText(entry.person.name)+'</strong><span>'+escapeAccountText(entry.category.title)+'</span></div><div class="followed-nominee-votes">'+entry.votes.toLocaleString('pt-PT')+' votos</div><button type="button" class="followed-remove" data-unfollow="'+entry.person.id+'">A SEGUIR ✓</button></article>').join('');
+ }
  function renderAccountNotifications(result){
   const root=$('account-notifications-list'),button=$('notifications-mark-read');if(!root)return;
   if(result.error){root.innerHTML='<p class="account-empty">Não foi possível carregar as notificações. Executa a migração SQL indicada pela organização.</p>';console.warn('Notifications:',result.error);if(button)button.disabled=true;return}
@@ -227,7 +254,7 @@
    if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
   });
   $('account-loyalty-redeem')?.addEventListener('click',redeemLoyaltyReward);
-  $('notifications-mark-read')?.addEventListener('click',markAccountNotificationsRead);
+  $('notifications-mark-read')?.addEventListener('click',markAccountNotificationsRead);\n  $('account-followed-list')?.addEventListener('click',e=>{const id=e.target.closest('[data-unfollow]')?.dataset.unfollow;if(id)toggleFollowNominee(id,e.target.closest('[data-unfollow]'))});\n  $('follow-filter')?.addEventListener('click',()=>{followOnly=!followOnly;$('follow-filter').classList.toggle('is-active',followOnly);$('follow-filter').textContent=followOnly?'A MOSTRAR: A SEGUIR':'FILTRAR: A SEGUIR';render()});
   $('account-loyalty-reward')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-loyalty-nominee')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-logout')?.addEventListener('click',async()=>{
@@ -287,9 +314,9 @@
   active=Math.min(active,categories.length-1);const q=slug(search.value.trim()),cat=categories[active];title.textContent=cat.title;
   renderCategorySponsor(cat);
   const items=cat.nominees.map((person,i)=>({person,i,votes:voteCounts[person.id]||0})).filter(x=>!q||slug(x.person.name).includes(q)||slug(cat.title).includes(q));
-  items.sort((a,b)=>b.votes-a.votes||a.i-b.i);grid.innerHTML='';
-  items.forEach((x,pos)=>{const p=x.person,card=document.createElement('article');card.className='nominee-card ranking-card';const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(pos+1).padStart(2,'0');const star=document.createElement('span');star.className='nominee-star';star.textContent='✦';const url=imageUrl(p.image_path);if(url){const img=document.createElement('img');img.className='nominee-photo';img.src=url;img.alt='Fotografia de '+p.name;img.loading='lazy';img.onerror=()=>img.remove();card.appendChild(img)}const name=document.createElement('div');name.className='nominee-name';name.textContent=p.name;const votes=document.createElement('div');votes.className='nominee-votes';votes.innerHTML='<strong>'+x.votes.toLocaleString('pt-PT')+'</strong><span>VOTOS</span>';const vote=document.createElement('button');vote.className='nominee-vote-button';vote.type='button';vote.textContent='VOTAR';vote.addEventListener('click',()=>openVote(cat,p));card.append(no,star,name,votes,vote);grid.appendChild(card)});
-  count.textContent=items.length+' NOMEADOS';empty.hidden=items.length!==0;visible.textContent=String(categories.length).padStart(2,'0');renderTabs();const total=Object.values(voteCounts).reduce((a,b)=>a+b,0);const el=$('total-votes');if(el)el.textContent=total.toLocaleString('pt-PT');renderOverallTop3();
+  items.sort((a,b)=>b.votes-a.votes||a.i-b.i);const visibleItems=followOnly?items.filter(x=>followedNomineeIds.has(x.person.id)):items;grid.innerHTML='';
+  visibleItems.forEach((x,pos)=>{const p=x.person,card=document.createElement('article');card.className='nominee-card ranking-card';const no=document.createElement('div');no.className='nominee-index';no.textContent='#'+String(pos+1).padStart(2,'0');const star=document.createElement('span');star.className='nominee-star';star.textContent='✦';const url=imageUrl(p.image_path);if(url){const img=document.createElement('img');img.className='nominee-photo';img.src=url;img.alt='Fotografia de '+p.name;img.loading='lazy';img.onerror=()=>img.remove();card.appendChild(img)}const name=document.createElement('div');name.className='nominee-name';name.textContent=p.name;const votes=document.createElement('div');votes.className='nominee-votes';votes.innerHTML='<strong>'+x.votes.toLocaleString('pt-PT')+'</strong><span>VOTOS</span>';const follow=document.createElement('button');follow.className='nominee-follow-button'+(followedNomineeIds.has(p.id)?' is-following':'');follow.type='button';follow.textContent=followedNomineeIds.has(p.id)?'A SEGUIR ✓':'＋ SEGUIR';follow.setAttribute('aria-pressed',String(followedNomineeIds.has(p.id)));follow.addEventListener('click',()=>toggleFollowNominee(p.id,follow));const vote=document.createElement('button');vote.className='nominee-vote-button';vote.type='button';vote.textContent='VOTAR';vote.addEventListener('click',()=>openVote(cat,p));card.append(no,star,name,votes,follow,vote);grid.appendChild(card)});
+  count.textContent=visibleItems.length+(followOnly?' A SEGUIR':' NOMEADOS');empty.hidden=visibleItems.length!==0;if(followOnly&&visibleItems.length===0)empty.textContent='Ainda não segues nomeados nesta categoria.';else empty.textContent='Não encontrámos resultados. Experimenta outra pesquisa.';visible.textContent=String(categories.length).padStart(2,'0');renderTabs();const total=Object.values(voteCounts).reduce((a,b)=>a+b,0);const el=$('total-votes');if(el)el.textContent=total.toLocaleString('pt-PT');renderOverallTop3();
  }
  async function submitVote(){
   const button=$('submit-vote'),status=$('vote-submit-status'),file=$('payment-proof').files[0],email=$('voter-email').value.trim(),payerName=$('payer-name').value.trim(),transaction=$('transaction-reference').value.trim();
