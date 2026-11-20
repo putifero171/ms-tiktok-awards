@@ -284,7 +284,25 @@
  search.addEventListener('input',render);document.querySelector('.menu-toggle').addEventListener('click',()=>document.querySelector('.topbar').classList.toggle('nav-open'));$('close-vote').addEventListener('click',closeVote);$('cancel-vote').addEventListener('click',closeVote);modal.addEventListener('click',e=>{if(e.target===modal)closeVote()});qty.addEventListener('input',updatePayment);qty.addEventListener('change',updatePayment);if(bulkOffer)bulkOffer.addEventListener('click',()=>{if(bulkPicker&&bulkPicker.hidden){qty.value=10;}else if(Number(qty.value)<10||Number(qty.value)>50||Number(qty.value)%10!==0){qty.value=10;}updatePayment();if(bulkPicker)bulkPicker.hidden=false;});
  if(bulkPackCount)bulkPackCount.addEventListener('change',()=>{qty.value=Number(bulkPackCount.value)*10;updatePayment();});if(blackFridayOffer)blackFridayOffer.addEventListener('click',()=>{if(!blackFridayActive())return;qty.value=100;updatePayment()});method.addEventListener('input',updatePayment);method.addEventListener('change',updatePayment);method.addEventListener('click',updatePayment);$('submit-vote').addEventListener('click',submitVote);
  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ref.textContent);copy.textContent='COPIADO!';setTimeout(()=>copy.textContent='COPIAR REFERÊNCIA',1800)}catch{copy.textContent='SELECCIONA E COPIA A REFERÊNCIA'}});
+
+ function initLoyaltyPromo(){
+  const modal=$('loyalty-promo');if(!modal)return;
+  const hide=()=>{modal.hidden=true;document.body.classList.remove('loyalty-promo-open')};
+  const dismiss=()=>{hide();try{localStorage.setItem('msLoyaltyPromoDismissedUntil',String(Date.now()+3*24*60*60*1000))}catch{}};
+  const show=()=>{if(currentUser)return;let until=0;try{until=Number(localStorage.getItem('msLoyaltyPromoDismissedUntil')||0)}catch{}if(Date.now()<until)return;modal.hidden=false;document.body.classList.add('loyalty-promo-open')};
+  $('loyalty-promo-close')?.addEventListener('click',dismiss);
+  $('loyalty-promo-later')?.addEventListener('click',dismiss);
+  modal.addEventListener('click',event=>{if(event.target===modal)dismiss()});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!modal.hidden)dismiss()});
+  $('loyalty-promo-login')?.addEventListener('click',()=>{
+   hide();try{localStorage.setItem('msLoyaltyPromoDismissedUntil',String(Date.now()+7*24*60*60*1000))}catch{}
+   $('minha-conta')?.scrollIntoView({behavior:'smooth',block:'start'});
+   window.setTimeout(()=>$('account-google')?.click(),500);
+  });
+  window.setTimeout(show,1800);
+ }
  initAccount().catch(error=>console.error('Account initialisation failed:',error));
+ initLoyaltyPromo();
  updateBlackFridayTimer();setInterval(updateBlackFridayTimer,1000);
  fallbackData();render();
  loadLiveData().then(()=>render()).catch(e=>{console.error('Live Supabase data unavailable; keeping nominee list visible.',e);render()});
