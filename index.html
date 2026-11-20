@@ -105,30 +105,10 @@
           </div>
           <div class="account-form">
             <button class="button-primary account-google" id="account-google" type="button">CONTINUAR COM GOOGLE</button>
-            <div class="account-divider"><span>OU ENTRA COM USERNAME</span></div>
-            <label for="account-username">USERNAME</label>
-            <input id="account-username" type="text" maxlength="24" autocomplete="username" placeholder="O teu username">
-            <label for="account-password">PALAVRA-PASSE</label>
-            <input id="account-password" type="password" minlength="8" autocomplete="current-password" placeholder="Mínimo 8 caracteres">
-            <div class="account-auth-actions">
-              <button class="button-primary" id="account-login" type="button">INICIAR SESSÃO</button>
-              <button class="account-register" id="account-register" type="button">CRIAR CONTA</button>
-            </div>
-            <div id="account-email-wrap" hidden>
-              <label for="account-email">EMAIL PARA RECUPERAÇÃO</label>
-              <input id="account-email" type="email" autocomplete="email" placeholder="email@exemplo.com">
-            </div>
-            <button class="account-forgot" id="account-forgot" type="button">Esqueci-me da palavra-passe</button>
+            <p class="account-google-note">Inicia sessão de forma segura com a tua conta Google para consultares o teu histórico de votos aprovados.</p>
+            <button class="button-primary account-google" id="account-google" type="button">CONTINUAR COM GOOGLE</button>
             <p class="account-status" id="account-auth-status" role="status" aria-live="polite"></p>
           </div>
-        </div>
-        <div class="account-recovery" id="account-recovery" hidden>
-          <h3>Recuperar palavra-passe</h3>
-          <p>Define uma nova palavra-passe para a tua conta.</p>
-          <label for="account-new-password">NOVA PALAVRA-PASSE</label>
-          <input id="account-new-password" type="password" minlength="8" autocomplete="new-password">
-          <button class="button-primary" id="account-save-password" type="button">GUARDAR NOVA PALAVRA-PASSE</button>
-          <p class="account-status" id="account-recovery-status" role="status"></p>
         </div>
         <div class="account-dashboard" id="account-dashboard" hidden>
           <div class="account-dashboard-head">
