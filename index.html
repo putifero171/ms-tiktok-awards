@@ -35,7 +35,7 @@
   </section>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <header class="topbar"><a class="brand" href="#"><img class="brand-logo" src="/marcelo-palop-transparent-optimized.png" alt="MS TikTok PALOP Awards 2026"><span>MS <b>TIKTOK AWARDS</b><small>PALOP · 2026</small></span></a>
-    <nav><a href="#home">Início</a><a href="#categories">Categorias</a><a href="#about">Sobre</a></nav>
+    <nav><a href="#home">Início</a><a href="#categories">Categorias</a><a href="#about">Sobre</a><a href="#minha-conta">Minha conta</a></nav>
     <a class="top-cta" href="#categories">Ver nomeados <span>↗</span></a><button class="menu-toggle" aria-label="Abrir menu">☰</button>
   </header>
   <main>
@@ -93,7 +93,61 @@
       <div class="reference-guide"><span class="notice-icon">✦</span><div><h3>Referência obrigatória do pagamento</h3><p>Na referência/descrição do pagamento, escreve exactamente:</p><strong class="reference-example">Voto X [Categoria] X [Nome] X [Nº de votos]</strong><p>Exemplos: <b>Voto X Ody Carla</b> · <b>Voto X MAF Muteba</b> · <b>Voto X Dj Celson</b></p><p>Se votares em nomeados diferentes, faz pagamentos separados e usa a referência correspondente a cada nomeado.</p><p>Depois, envia o comprovativo e a referência da transacção para validação. <b>O voto só será contabilizado depois de a organização confirmar e aprovar o pagamento.</b></p></div></div>
       <p class="payment-status">Guarda o comprovativo e o ID da transacção. Cada pagamento deve corresponder a uma única submissão e a um único nomeado. A aprovação é manual.</p>
     </section>
-<section class="about-section" id="about"><div class="about-number">MS / 26</div><div><div class="eyebrow">MAIS DO QUE UM PRÉMIO</div><h2>Uma noite.<br><span class="gradient-text">Muitas histórias.</span></h2></div><div class="about-copy"><p>Os MS TikTok PALOP Awards 2026 celebram criadores, artistas e personalidades que inspiram conversas e movimentam a cultura digital dos PALOP.</p><p class="disclaimer">Evento independente para a comunidade PALOP. Não é afiliado, patrocinado ou oficialmente associado ao TikTok ou à ByteDance.</p></div></section>
+
+    <section class="account-section" id="minha-conta" aria-labelledby="account-title">
+      <div class="eyebrow">ÁREA EXCLUSIVA DE MEMBROS</div>
+      <div class="account-shell">
+        <div class="account-auth" id="account-auth">
+          <div class="account-auth-copy">
+            <div class="account-mark">MS</div>
+            <h3 id="account-title">A tua conta. <span class="gradient-text">O teu percurso.</span></h3>
+            <p>Entra para acompanhares o teu histórico de votos aprovados. Também podes continuar a votar sem criar conta.</p>
+          </div>
+          <div class="account-form">
+            <button class="button-primary account-google" id="account-google" type="button">CONTINUAR COM GOOGLE</button>
+            <div class="account-divider"><span>OU ENTRA COM USERNAME</span></div>
+            <label for="account-username">USERNAME</label>
+            <input id="account-username" type="text" maxlength="24" autocomplete="username" placeholder="O teu username">
+            <label for="account-password">PALAVRA-PASSE</label>
+            <input id="account-password" type="password" minlength="8" autocomplete="current-password" placeholder="Mínimo 8 caracteres">
+            <div class="account-auth-actions">
+              <button class="button-primary" id="account-login" type="button">INICIAR SESSÃO</button>
+              <button class="account-register" id="account-register" type="button">CRIAR CONTA</button>
+            </div>
+            <div id="account-email-wrap" hidden>
+              <label for="account-email">EMAIL PARA RECUPERAÇÃO</label>
+              <input id="account-email" type="email" autocomplete="email" placeholder="email@exemplo.com">
+            </div>
+            <button class="account-forgot" id="account-forgot" type="button">Esqueci-me da palavra-passe</button>
+            <p class="account-status" id="account-auth-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="account-recovery" id="account-recovery" hidden>
+          <h3>Recuperar palavra-passe</h3>
+          <p>Define uma nova palavra-passe para a tua conta.</p>
+          <label for="account-new-password">NOVA PALAVRA-PASSE</label>
+          <input id="account-new-password" type="password" minlength="8" autocomplete="new-password">
+          <button class="button-primary" id="account-save-password" type="button">GUARDAR NOVA PALAVRA-PASSE</button>
+          <p class="account-status" id="account-recovery-status" role="status"></p>
+        </div>
+        <div class="account-dashboard" id="account-dashboard" hidden>
+          <div class="account-dashboard-head">
+            <div><div class="eyebrow">BEM-VINDO DE VOLTA</div><h3 id="account-welcome">A tua conta</h3><p id="account-user-email"></p></div>
+            <button class="account-logout" id="account-logout" type="button">TERMINAR SESSÃO</button>
+          </div>
+          <div class="account-stats">
+            <article><strong id="account-total-votes">0</strong><span>VOTOS APROVADOS</span></article>
+            <article><strong id="account-categories-count">0</strong><span>CATEGORIAS</span></article>
+            <article><strong id="account-orders-count">0</strong><span>SUBMISSÕES APROVADAS</span></article>
+          </div>
+          <div class="account-history-head"><h4>O teu histórico de votos</h4><span>APENAS VISÍVEL NA TUA CONTA</span></div>
+          <div class="account-history" id="account-history"><p class="account-empty">Inicia sessão para consultar o teu histórico.</p></div>
+          <p class="account-privacy-note">O histórico apresenta apenas submissões aprovadas associadas à tua conta. Votos enviados sem sessão iniciada não aparecem aqui.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section" id="about"><div class="about-number">MS / 26</div><div><div class="eyebrow">MAIS DO QUE UM PRÉMIO</div><h2>Uma noite.<br><span class="gradient-text">Muitas histórias.</span></h2></div><div class="about-copy"><p>Os MS TikTok PALOP Awards 2026 celebram criadores, artistas e personalidades que inspiram conversas e movimentam a cultura digital dos PALOP.</p><p class="disclaimer">Evento independente para a comunidade PALOP. Não é afiliado, patrocinado ou oficialmente associado ao TikTok ou à ByteDance.</p></div></section>
   </main>
   <footer><a class="brand" href="#"><span class="brand-mark">MS</span><span>MS <b>TIKTOK AWARDS</b><small>PALOP · 2026</small></span></a><span>© 2026 MS TikTok PALOP Awards. Todos os direitos reservados.</span><span class="footer-credit">Desenvolvido por: <b>BlackMoon Services World Wide</b></span><a href="#home">VOLTAR AO TOPO ↑</a></footer>
   <div class="vote-modal-backdrop" id="vote-modal" hidden>
