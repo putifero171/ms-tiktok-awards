@@ -127,10 +127,6 @@
  async function initAccount(){
   if(!sb)return;
   const status=$('account-auth-status');
-  const username=()=> $('account-username').value.trim();
-  const password=()=> $('account-password').value;
-  const validUsername=value=>/^[a-zA-Z0-9._-]{3,24}$/.test(value);
-  const emailWrap=$('account-email-wrap');
   $('account-google')?.addEventListener('click',async()=>{
    status.textContent='A ligar ao Google...';
    const {error}=await sb.auth.signInWithOAuth({
@@ -139,54 +135,19 @@
    });
    if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
   });
-  $('account-login')?.addEventListener('click',async()=>{
-   if(emailWrap)emailWrap.hidden=true;
-   const name=username();if(!validUsername(name)||password().length<8){status.textContent='Confirma o username (3–24 caracteres) e a palavra-passe (mínimo 8).';return}
-   status.textContent='A iniciar sessão...';
-   const {data,error}=await sb.functions.invoke('username-login',{body:{username:name,password:password()}});
-   if(error){status.textContent='Não foi possível iniciar sessão. Verifica os dados e tenta novamente.';console.error(error);return}
-   if(!data?.access_token||!data?.refresh_token){status.textContent=data?.error||'Resposta de autenticação inválida.';return}
-   const {data:sessionData,error:sessionError}=await sb.auth.setSession({access_token:data.access_token,refresh_token:data.refresh_token});
-   if(sessionError){status.textContent='Não foi possível iniciar sessão. Tenta novamente.';console.error(sessionError);return}
-   await syncAccount(sessionData.session);status.textContent='';
+  $('account-logout')?.addEventListener('click',async()=>{
+   const {error}=await sb.auth.signOut();
+   if(error){status.textContent=error.message;return}
+   await syncAccount(null);
   });
-  $('account-register')?.addEventListener('click',async()=>{
-   if(emailWrap)emailWrap.hidden=false;
-   const name=username(),email=$('account-email').value.trim(),pass=password();
-   if(!validUsername(name)){status.textContent='O username deve ter 3–24 caracteres: letras, números, ponto, hífen ou underscore.';return}
-   if(!email){status.textContent='Introduz o email para recuperação da conta.';return}
-   if(pass.length<8){status.textContent='A palavra-passe deve ter pelo menos 8 caracteres.';return}
-   status.textContent='A criar conta...';
-   const {data,error}=await sb.functions.invoke('username-signup',{body:{username:name,email,password:pass}});
-   if(error){status.textContent=data?.error||'Não foi possível criar a conta. Verifica os dados.';console.error(error);return}
-   status.textContent=data?.message||'Conta criada. Verifica o teu email para confirmar o registo.';
-  });
-  $('account-forgot')?.addEventListener('click',async()=>{
-   if(emailWrap)emailWrap.hidden=false;
-   const email=$('account-email').value.trim();
-   if(!email){status.textContent='Introduz o email associado à tua conta para receberes o link de recuperação.';return}
-   status.textContent='A enviar o link de recuperação...';
-   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/#minha-conta'});
-   status.textContent=error?'Não foi possível enviar o email. Confirma o endereço e tenta novamente.':'Se o endereço estiver registado, receberás um email com o link para recuperar a palavra-passe.';
-  });
-  $('account-save-password')?.addEventListener('click',async()=>{
-   const next=$('account-new-password').value,recoveryStatus=$('account-recovery-status');
-   if(next.length<8){recoveryStatus.textContent='A nova palavra-passe deve ter pelo menos 8 caracteres.';return}
-   const {error}=await sb.auth.updateUser({password:next});
-   if(error){recoveryStatus.textContent='Não foi possível actualizar a palavra-passe. Abre novamente o link do email.';return}
-   recoveryStatus.textContent='Palavra-passe actualizada. Já podes entrar com o teu username.';
-   $('account-new-password').value='';
-   await sb.auth.signOut();
-  });
-  $('account-logout')?.addEventListener('click',async()=>{const {error}=await sb.auth.signOut();if(error){status.textContent=error.message;return}await syncAccount(null)});
   sb.auth.onAuthStateChange((event,session)=>{
    window.setTimeout(async()=>{
-    if(event==='PASSWORD_RECOVERY'){$('account-recovery').hidden=false;$('account-auth').hidden=true;$('account-dashboard').hidden=true;}
-    else if(event==='SIGNED_OUT'){$('account-recovery').hidden=true;await syncAccount(null)}
+    if(event==='SIGNED_OUT')await syncAccount(null);
     else if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')await syncAccount(session);
    },0);
   });
-  const {data:{session}}=await sb.auth.getSession();await syncAccount(session);
+  const {data:{session}}=await sb.auth.getSession();
+  await syncAccount(session);
  }
  function renderOverallTop3(){
   const container=$('overall-top-grid');if(!container)return;
