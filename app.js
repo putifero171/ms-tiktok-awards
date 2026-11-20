@@ -119,6 +119,9 @@
   const auth=$('account-auth'),dashboard=$('account-dashboard');if(!auth||!dashboard)return;
   auth.hidden=!!currentUser;dashboard.hidden=!currentUser;
   if(!currentUser)return;
+  // Supabase has restored the OAuth session; now safely clean the token fragment and show the account section.
+  window.history.replaceState({},'',window.location.pathname+'#minha-conta');
+  const accountSection=$('minha-conta');if(accountSection)accountSection.scrollIntoView({behavior:'smooth',block:'start'});
   const displayName=currentUser.user_metadata?.username||currentUser.user_metadata?.full_name||currentUser.email||'Membro';
   $('account-user-email').textContent=currentUser.email||'';
   $('account-welcome').textContent='Bem-vindo, '+displayName;
@@ -131,7 +134,7 @@
    status.textContent='A ligar ao Google...';
    const {error}=await sb.auth.signInWithOAuth({
     provider:'google',
-    options:{redirectTo:window.location.origin+'/#minha-conta',queryParams:{prompt:'select_account'}}
+    options:{redirectTo:window.location.origin+'/',queryParams:{prompt:'select_account'}}
    });
    if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
   });
