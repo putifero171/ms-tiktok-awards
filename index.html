@@ -119,6 +119,18 @@
             <article><strong id="account-categories-count">0</strong><span>CATEGORIAS</span></article>
             <article><strong id="account-orders-count">0</strong><span>SUBMISSÕES APROVADAS</span></article>
           </div>
+          <section class="account-loyalty" aria-labelledby="account-loyalty-title">
+            <div class="account-loyalty-heading"><div><div class="eyebrow">VOTE &amp; EARN</div><h4 id="account-loyalty-title">Clube de Fidelidade</h4><p>Por cada 30 votos pagos e aprovados, recebes automaticamente 3 votos grátis.</p></div><span class="loyalty-mark">✦ RECOMPENSAS</span></div>
+            <div class="loyalty-progress-meta"><strong id="loyalty-progress-label">0 / 30 votos</strong><span id="loyalty-next-label">Faltam 30 votos</span></div>
+            <div class="loyalty-progress-track"><div id="loyalty-progress-bar" class="loyalty-progress-bar" style="width:0%"></div></div>
+            <div class="loyalty-stats"><div><strong id="loyalty-available-count">0</strong><span>VOUCHERS DISPONÍVEIS</span></div><div><strong id="loyalty-redeemed-count">0</strong><span>VOUCHERS UTILIZADOS</span></div></div>
+            <div class="loyalty-redeem">
+              <label for="account-loyalty-reward">Escolhe o teu voucher</label><select id="account-loyalty-reward"><option value="">Sem vouchers disponíveis</option></select>
+              <label for="account-loyalty-nominee">Escolhe o nomeado que queres apoiar</label><select id="account-loyalty-nominee"><option value="">A carregar nomeados...</option></select>
+              <button id="account-loyalty-redeem" class="account-loyalty-button" type="button" disabled>UTILIZAR 3 VOTOS GRÁTIS</button>
+              <p id="account-loyalty-status" class="account-status" aria-live="polite"></p>
+            </div>
+          </section>
           <div class="account-history-head"><h4>O teu histórico de votos</h4><span>APENAS VISÍVEL NA TUA CONTA</span></div>
           <div class="account-history" id="account-history"><p class="account-empty">Inicia sessão para consultar o teu histórico.</p></div>
           <p class="account-privacy-note">O histórico apresenta apenas submissões aprovadas associadas à tua conta. Votos enviados sem sessão iniciada não aparecem aqui.</p>
