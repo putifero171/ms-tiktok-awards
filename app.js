@@ -123,7 +123,10 @@
   const following=followedNomineeIds.has(nomineeId);button.disabled=true;
   const result=following
    ?await sb.from('awards_followed_nominees').delete().eq('user_id',currentUser.id).eq('nominee_id',nomineeId)
-   :await sb.from('awards_followed_nominees').insert({user_id:currentUser.id,nominee_id:nomineeId});
+   :await sb.from('awards_followed_nominees').upsert(
+      {user_id:currentUser.id,nominee_id:nomineeId},
+      {onConflict:'user_id,nominee_id',ignoreDuplicates:true}
+    );
   if(result.error){
    console.error('Follow nominee:',result.error);
    button.disabled=false;button.textContent='ERRO · VER DETALHES';
