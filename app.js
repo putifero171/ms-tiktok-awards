@@ -106,12 +106,54 @@
  async function loadAccountHistory(){
   const history=$('account-history');if(!currentUser||!history)return;
   history.innerHTML='<p class="account-empty">A carregar os votos aprovados...</p>';
-  const {data,error}=await sb.from('vote_submissions').select('id,quantity,created_at,payment_method,amount,currency,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).eq('status','approved').order('created_at',{ascending:false}).limit(100);
+  const [historyResult,loyaltyResult,rewardsResult]=await Promise.all([
+    sb.from('vote_submissions').select('id,quantity,created_at,payment_method,amount,currency,category:categories(title),nominee:nominees(name)').eq('user_id',currentUser.id).eq('status','approved').order('created_at',{ascending:false}).limit(100),
+    sb.rpc('get_my_loyalty_status'),
+    sb.from('awards_loyalty_rewards').select('id,milestone_votes,created_at,status').eq('user_id',currentUser.id).eq('status','available').order('milestone_votes',{ascending:true})
+  ]);
+  const {data,error}=historyResult;
   if(error){history.innerHTML='<p class="account-empty">Não foi possível carregar o histórico. Tenta novamente mais tarde.</p>';console.error('Account history:',error);return}
-  const rows=data||[],total=rows.reduce((sum,row)=>sum+(Number(row.quantity)||0),0),cats=new Set(rows.map(row=>row.category?.title).filter(Boolean));
-  $('account-total-votes').textContent=total.toLocaleString('pt-PT');$('account-categories-count').textContent=String(cats.size);$('account-orders-count').textContent=String(rows.length);
+  const rows=data||[],cats=new Set(rows.map(row=>row.category?.title).filter(Boolean));
+  $('account-categories-count').textContent=String(cats.size);$('account-orders-count').textContent=String(rows.length);
+  if(loyaltyResult.error){console.error('Loyalty status:',loyaltyResult.error);$('account-total-votes').textContent=rows.reduce((sum,row)=>sum+(Number(row.quantity)||0),0).toLocaleString('pt-PT');}
+  else{
+    const loyalty=loyaltyResult.data||{},total=Number(loyalty.approved_votes)||0,progress=Number(loyalty.progress_in_cycle)||0,remaining=30-progress;
+    $('account-total-votes').textContent=total.toLocaleString('pt-PT');
+    $('loyalty-progress-label').textContent=progress+' / 30 votos';
+    $('loyalty-next-label').textContent=remaining===30?'Começa a acumular votos':'Faltam '+remaining+' votos';
+    $('loyalty-progress-bar').style.width=(progress/30*100)+'%';
+    $('loyalty-available-count').textContent=String(loyalty.available_rewards||0);
+    $('loyalty-redeemed-count').textContent=String(loyalty.redeemed_rewards||0);
+  }
+  if(rewardsResult.error){console.error('Loyalty rewards:',rewardsResult.error)}
+  const rewards=rewardsResult.data||[],rewardSelect=$('account-loyalty-reward'),redeemButton=$('account-loyalty-redeem');
+  rewardSelect.innerHTML=rewards.length?rewards.map(r=>'<option value="'+r.id+'">Voucher de 3 votos · marco '+Number(r.milestone_votes)+' votos</option>').join(''):'<option value="">Sem vouchers disponíveis</option>';
+  rewardSelect.disabled=!rewards.length;
+  renderAccountLoyaltyNominees();
+  redeemButton.disabled=!rewards.length||!$('account-loyalty-nominee').value;
   if(!rows.length){history.innerHTML='<p class="account-empty">Ainda não tens votos aprovados associados a esta conta.</p>';return}
   history.innerHTML=rows.map(row=>{const date=new Date(row.created_at).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'});const money=row.currency==='EUR'?'€'+Number(row.amount).toLocaleString('pt-PT'):(Number(row.amount).toLocaleString('pt-PT')+' Kz');return '<article class="account-history-row"><div class="account-history-main"><strong>'+escapeAccountText(row.nominee?.name||'Nomeado')+'</strong><span>'+escapeAccountText(row.category?.title||'Categoria')+' · '+date+'</span></div><div class="account-history-meta"><b>'+Number(row.quantity)+' votos</b><span>'+money+'</span></div></article>'}).join('');
+ }
+ function renderAccountLoyaltyNominees(){
+  const select=$('account-loyalty-nominee');if(!select)return;
+  const current=select.value,options=[];
+  (categories||[]).forEach(category=>(category.nominees||[]).forEach(nominee=>{
+    if(nominee.id)options.push('<option value="'+nominee.id+'" data-category="'+category.id+'">'+escapeAccountText(nominee.name)+' — '+escapeAccountText(category.title)+'</option>');
+  }));
+  select.innerHTML=options.length?'<option value="">Selecciona um nomeado</option>'+options.join(''):'<option value="">Não existem nomeados disponíveis</option>';
+  if(current&&select.querySelector('option[value="'+current+'"]'))select.value=current;
+  const button=$('account-loyalty-redeem');if(button)button.disabled=!$('account-loyalty-reward')?.value||!select.value;
+ }
+ async function redeemLoyaltyReward(){
+  const rewardId=$('account-loyalty-reward')?.value,nomineeSelect=$('account-loyalty-nominee'),nomineeId=nomineeSelect?.value,status=$('account-loyalty-status'),button=$('account-loyalty-redeem');
+  const selectedOption=nomineeSelect?.selectedOptions?.[0],categoryId=selectedOption?.dataset.category;
+  if(!rewardId||!nomineeId||!categoryId||!currentUser)return;
+  button.disabled=true;status.textContent='A validar o teu voucher...';
+  const {data,error}=await sb.rpc('redeem_my_loyalty_reward',{p_reward_id:rewardId,p_category_id:categoryId,p_nominee_id:nomineeId});
+  if(error){status.textContent='Não foi possível utilizar o voucher: '+error.message;console.error('Loyalty redemption:',error);button.disabled=false;return}
+  status.textContent='Voucher utilizado! Foram atribuídos 3 votos grátis ao nomeado escolhido.';
+  await loadAccountHistory();
+  if(data?.success)refreshApprovedRanking().catch(()=>{});
  }
  function escapeAccountText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  async function syncAccount(session){
@@ -138,6 +180,9 @@
    });
    if(error){status.textContent='Não foi possível iniciar sessão com Google. Tenta novamente.';console.error('Google OAuth:',error);}
   });
+  $('account-loyalty-redeem')?.addEventListener('click',redeemLoyaltyReward);
+  $('account-loyalty-reward')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
+  $('account-loyalty-nominee')?.addEventListener('change',()=>{const b=$('account-loyalty-redeem');if(b)b.disabled=!$('account-loyalty-reward').value||!$('account-loyalty-nominee').value});
   $('account-logout')?.addEventListener('click',async()=>{
    const {error}=await sb.auth.signOut();
    if(error){status.textContent=error.message;return}
