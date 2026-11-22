@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     if (!submissions.length || submissions[0].status !== 'approved') return res.status(409).json({ error: 'A submissão ainda não está aprovada.' });
 
     const forwarded = req.headers['x-forwarded-for'];
-    const ip = (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '') || req.headers['x-real-ip'] || req.socket?.remoteAddress || null;
+    const chain = typeof forwarded === 'string' ? forwarded.split(',').map(value => value.trim()).filter(Boolean) : [];\n    const ip = req.headers['x-real-ip'] || chain[chain.length - 1] || req.socket?.remoteAddress || null;
     if (!ip) throw new Error('Não foi possível obter o IP público do pedido.');
 
     let geo = {};
