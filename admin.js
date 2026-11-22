@@ -25,7 +25,7 @@
   $('category-sponsors-panel').classList.toggle('admin-hidden',!['super_admin','admin','content_admin'].includes(role));
   if(['super_admin','admin','content_admin'].includes(role)) await loadCategorySponsors();
   if(role!=='vote_approver') await loadNominees();
-  if(role!=='content_admin') await loadSubmissions();
+  if(role!=='content_admin'){await loadSubmissions();await loadApprovalAudit();}
  }
  async function loadAll(){await loadCategories();await loadNominees();await loadSubmissions()}
  async function loadCategories(){
@@ -84,6 +84,13 @@
  }
  function showSelectedNominee(){const n=nominees.find(x=>x.id===$('edit-nominee').value);$('nominee-name').value=n?.name||''}
  $('edit-category').addEventListener('change',populateNominees);$('edit-nominee').addEventListener('change',showSelectedNominee);
+ async function loadApprovalAudit(){
+  const root=$('approval-audit-body');if(!root)return;
+  const {data,error}=await client.from('vote_approval_audit').select('id,approved_at,ip_address,city,region,country,submission:vote_submissions(quantity,amount,currency,payment_method,nominee:nominees(name),category:categories(title))').order('approved_at',{ascending:false}).limit(50);
+  if(error){root.innerHTML='<tr><td colspan="7">Não foi possível carregar o registo: '+esc(error.message)+'</td></tr>';return}
+  root.innerHTML=(data||[]).map(row=>'<tr><td>'+new Date(row.approved_at).toLocaleString('pt-PT')+'</td><td>'+esc(row.submission?.nominee?.name)+'<br><small>'+esc(row.submission?.category?.title)+'</small></td><td>'+Number(row.submission?.quantity||0)+'</td><td>'+esc(row.ip_address||'—')+'</td><td>'+esc([row.city,row.region,row.country].filter(Boolean).join(', ')||'Localização indisponível')+'</td><td>'+esc(row.submission?.payment_method||'—')+'</td><td>'+esc(row.submission?.amount??'—')+' '+esc(row.submission?.currency||'')+'</td></tr>').join('')||'<tr><td colspan="7">Ainda não existem aprovações registadas.</td></tr>';
+ }
+ $('refresh-approval-audit')?.addEventListener('click',loadApprovalAudit);
  async function loadSubmissions(){
   const {data,error}=await client.from('vote_submissions').select('id,created_at,quantity,payment_method,amount,currency,payment_reference,transaction_reference,voter_email,payer_name,proof_path,status,nominees(name),categories(title)').eq('status','pending').order('created_at',{ascending:true});
   if(error){say('dashboard-message',error.message);return}
@@ -109,7 +116,16 @@
   const approve=e.target.dataset.approve,reject=e.target.dataset.reject,id=approve||reject;if(!id)return;
   const next=approve?'approved':'rejected';if(!confirm('Confirmas '+(approve?'a aprovação':'a rejeição')+' desta submissão?'))return;
   const {error}=await client.rpc('admin_review_vote_submission',{submission_id:id,decision:next});
-  if(error){say('dashboard-message',error.message);return}say('dashboard-message','Submissão '+(approve?'aprovada.':'rejeitada.'));await loadSubmissions();
+  if(error){say('dashboard-message',error.message);return}
+  if(approve){
+   const {data:{session}}=await client.auth.getSession();
+   try{
+    const audit=await fetch('/api/log-vote-approval',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({submission_id:id})});
+    const payload=await audit.json();
+    if(!audit.ok)throw new Error(payload.error||'Não foi possível registar o IP.');
+   }catch(auditError){console.error('Approval IP audit:',auditError);say('dashboard-message','Voto aprovado, mas não foi possível registar IP/localização: '+auditError.message);await loadSubmissions();await loadApprovalAudit();return}
+  }
+  say('dashboard-message','Submissão '+(approve?'aprovada e IP registado.':'rejeitada.'));await loadSubmissions();if(approve)await loadApprovalAudit();
  });
  $('save-nominee').addEventListener('click',async()=>{
   const id=$('edit-nominee').value,n=nominees.find(x=>x.id===id);if(!n)return;
